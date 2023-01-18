@@ -1,6 +1,7 @@
 package tuple
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -95,4 +96,43 @@ func TestSubtractTwoVectors(t *testing.T) {
 	v2 := NewVector(5, 6, 7)
 
 	assert.Equal(t, v1.Sub(v2), NewVector(-2, -4, -6))
+}
+
+func TestSubtractFromZeroVector(t *testing.T) {
+	v1 := NewVector(0, 0, 0)
+	v2 := NewVector(1, -2, 3)
+
+	assert.Equal(t, v1.Sub(v2), NewVector(-1, 2, -3))
+}
+
+func TestNegate(t *testing.T) {
+	tu := New(1, -2, 3, -4)
+
+	assert.Equal(t, tu.Neg(), New(-1, 2, -3, 4))
+}
+
+func TestMultiplyByScalar(t *testing.T) {
+	tu := New(1, -2, 3, -4)
+
+	assert.Equal(t, tu.Mul(3.5), New(3.5, -7, 10.5, -14))
+}
+
+func TestMultiplyByFraction(t *testing.T) {
+	tu := New(1, -2, 3, -4)
+
+	assert.Equal(t, tu.Mul(0.5), New(0.5, -1, 1.5, -2))
+}
+
+func TestDivisionByScalar(t *testing.T) {
+	tu := New(1, -2, 3, -4)
+
+	assert.Equal(t, tu.Div(2), New(0.5, -1, 1.5, -2))
+}
+
+func TestMagnitude(t *testing.T) {
+	assert.Equal(t, NewVector(1, 0, 0).Mag(), 1.0)
+	assert.Equal(t, NewVector(0, 1, 0).Mag(), 1.0)
+	assert.Equal(t, NewVector(0, 0, 1).Mag(), 1.0)
+	assert.Equal(t, NewVector(1, 2, 3).Mag(), math.Sqrt(14))
+	assert.Equal(t, NewVector(-1, -2, -3).Mag(), math.Sqrt(14))
 }

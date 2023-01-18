@@ -1,6 +1,10 @@
 package tuple
 
-import "github.com/danieltmartin/ray-tracer/float"
+import (
+	"math"
+
+	"github.com/danieltmartin/ray-tracer/float"
+)
 
 type Tuple struct {
 	X, Y, Z, W float64
@@ -49,4 +53,30 @@ func (t Tuple) Sub(t2 Tuple) Tuple {
 		t.Z - t2.Z,
 		t.W - t2.W,
 	}
+}
+
+func (t Tuple) Mul(v float64) Tuple {
+	return Tuple{
+		t.X * v,
+		t.Y * v,
+		t.Z * v,
+		t.W * v,
+	}
+}
+
+func (t Tuple) Div(v float64) Tuple {
+	return Tuple{
+		t.X / v,
+		t.Y / v,
+		t.Z / v,
+		t.W / v,
+	}
+}
+
+func (t Tuple) Mag() float64 {
+	return math.Sqrt(t.X*t.X + t.Y*t.Y + t.Z*t.Z)
+}
+
+func (t Tuple) Neg() Tuple {
+	return Tuple{-t.X, -t.Y, -t.Z, -t.W}
 }
