@@ -80,3 +80,13 @@ func (t Tuple) Mag() float64 {
 func (t Tuple) Neg() Tuple {
 	return Tuple{-t.X, -t.Y, -t.Z, -t.W}
 }
+
+func (t Tuple) Norm() Tuple {
+	mag := t.Mag()
+	return Tuple{
+		t.X / mag,
+		t.Y / mag,
+		t.Z / mag,
+		t.W / mag,
+	}
+}

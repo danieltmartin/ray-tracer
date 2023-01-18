@@ -4,6 +4,7 @@ import (
 	"math"
 	"testing"
 
+	"github.com/danieltmartin/ray-tracer/float"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -135,4 +136,22 @@ func TestMagnitude(t *testing.T) {
 	assert.Equal(t, NewVector(0, 0, 1).Mag(), 1.0)
 	assert.Equal(t, NewVector(1, 2, 3).Mag(), math.Sqrt(14))
 	assert.Equal(t, NewVector(-1, -2, -3).Mag(), math.Sqrt(14))
+}
+
+func TestNormalize(t *testing.T) {
+	assert.Equal(t, NewVector(4, 0, 0).Norm(), NewVector(1, 0, 0))
+	assertAlmost(t, NewVector(1, 2, 3).Norm(), NewVector(0.26726, 0.53452, 0.80178))
+}
+
+func TestMagnitudeOfNormalizedVector(t *testing.T) {
+	v := NewVector(1, 2, 3)
+
+	assert.Equal(t, v.Norm().Mag(), 1.0)
+}
+
+func assertAlmost(t *testing.T, t1 Tuple, t2 Tuple) {
+	assert.True(t, float.Equal(t1.X, t2.X), "X values differ: t1.X=%v, t2.X=%v", t1.X, t2.X)
+	assert.True(t, float.Equal(t1.Y, t2.Y), "Y values differ: t1.Y=%v, t2.Y=%v", t1.Y, t2.Y)
+	assert.True(t, float.Equal(t1.Z, t2.Z), "Z values differ: t1.Z=%v, t2.Z=%v", t1.Z, t2.Z)
+	assert.True(t, float.Equal(t1.W, t2.W), "W values differ: t1.W=%v, t2.W=%v", t1.W, t2.W)
 }
