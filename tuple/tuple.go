@@ -32,3 +32,21 @@ func (t Tuple) IsPoint() bool {
 func (t Tuple) IsVector() bool {
 	return !t.IsPoint()
 }
+
+func (t Tuple) Add(t2 Tuple) Tuple {
+	return Tuple{
+		t.X + t2.X,
+		t.Y + t2.Y,
+		t.Z + t2.Z,
+		t.W + t2.W,
+	}
+}
+
+func (t Tuple) Sub(t2 Tuple) Tuple {
+	return Tuple{
+		t.X - t2.X,
+		t.Y - t2.Y,
+		t.Z - t2.Z,
+		t.W - t2.W,
+	}
+}

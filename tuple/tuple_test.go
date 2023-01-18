@@ -68,3 +68,31 @@ func TestEqualsWithinEpsilon(t *testing.T) {
 
 	assert.True(t, p.Equals(p2))
 }
+
+func TestAddPointAndVector(t *testing.T) {
+	p := NewPoint(3, -2, 5)
+	v := NewVector(-2, 3, 1)
+
+	assert.Equal(t, p.Add(v), NewPoint(1, 1, 6))
+}
+
+func TestSubtractTwoPoints(t *testing.T) {
+	p1 := NewPoint(3, 2, 1)
+	p2 := NewPoint(5, 6, 7)
+
+	assert.Equal(t, p1.Sub(p2), NewVector(-2, -4, -6))
+}
+
+func TestSubtractVectorFromPoint(t *testing.T) {
+	p := NewPoint(3, 2, 1)
+	v := NewVector(5, 6, 7)
+
+	assert.Equal(t, p.Sub(v), NewPoint(-2, -4, -6))
+}
+
+func TestSubtractTwoVectors(t *testing.T) {
+	v1 := NewVector(3, 2, 1)
+	v2 := NewVector(5, 6, 7)
+
+	assert.Equal(t, v1.Sub(v2), NewVector(-2, -4, -6))
+}
