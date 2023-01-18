@@ -149,6 +149,21 @@ func TestMagnitudeOfNormalizedVector(t *testing.T) {
 	assert.Equal(t, v.Norm().Mag(), 1.0)
 }
 
+func TestDotProduct(t *testing.T) {
+	v1 := NewVector(1, 2, 3)
+	v2 := NewVector(2, 3, 4)
+
+	assert.Equal(t, v1.Dot(v2), 20.0)
+}
+
+func TestCrossProduct(t *testing.T) {
+	v1 := NewVector(1, 2, 3)
+	v2 := NewVector(2, 3, 4)
+
+	assert.Equal(t, v1.Cross(v2), NewVector(-1, 2, -1))
+	assert.Equal(t, v2.Cross(v1), NewVector(1, -2, 1))
+}
+
 func assertAlmost(t *testing.T, t1 Tuple, t2 Tuple) {
 	assert.True(t, float.Equal(t1.X, t2.X), "X values differ: t1.X=%v, t2.X=%v", t1.X, t2.X)
 	assert.True(t, float.Equal(t1.Y, t2.Y), "Y values differ: t1.Y=%v, t2.Y=%v", t1.Y, t2.Y)

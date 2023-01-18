@@ -90,3 +90,16 @@ func (t Tuple) Norm() Tuple {
 		t.W / mag,
 	}
 }
+
+func (t Tuple) Dot(t2 Tuple) float64 {
+	return t.X*t2.X + t.Y*t2.Y + t.Z*t2.Z + t.W*t2.W
+}
+
+func (t Tuple) Cross(t2 Tuple) Tuple {
+	return Tuple{
+		t.Y*t2.Z - t.Z*t2.Y,
+		t.Z*t2.X - t.X*t2.Z,
+		t.X*t2.Y - t.Y*t2.X,
+		0.0,
+	}
+}
