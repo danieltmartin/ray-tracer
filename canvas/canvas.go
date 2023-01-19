@@ -33,6 +33,9 @@ func (c Canvas) PixelAt(x, y int) floatcolor.Float64Color {
 }
 
 func (c Canvas) WritePixel(x, y int, col floatcolor.Float64Color) {
+	if x < 0 || y < 0 || x > c.width-1 || y > c.height-1 {
+		return
+	}
 	c.pixels[x+y*c.width] = col
 }
 
