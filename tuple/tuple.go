@@ -103,12 +103,3 @@ func (t Tuple) Cross(t2 Tuple) Tuple {
 		0.0,
 	}
 }
-
-func (t Tuple) Hadamard(t2 Tuple) Tuple {
-	return Tuple{
-		t.X * t2.X,
-		t.Y * t2.Y,
-		t.Z * t2.Z,
-		t.W * t2.W,
-	}
-}
