@@ -1,6 +1,9 @@
 package matrix
 
-import "github.com/danieltmartin/ray-tracer/float"
+import (
+	"github.com/danieltmartin/ray-tracer/float"
+	"github.com/danieltmartin/ray-tracer/tuple"
+)
 
 type Matrix struct {
 	m [][]float64
@@ -70,4 +73,109 @@ func (m Matrix) Mul(m2 Matrix) Matrix {
 	}
 
 	return product
+}
+
+func (m Matrix) MulTuple(t tuple.Tuple) tuple.Tuple {
+	if len(m.m) != 4 || len(m.m[0]) != 4 {
+		panic("invalid dimensions for matrix-tuple multiplication")
+	}
+
+	x := m.m[0][0]*t.X + m.m[0][1]*t.Y + m.m[0][2]*t.Z + m.m[0][3]*t.W
+	y := m.m[1][0]*t.X + m.m[1][1]*t.Y + m.m[1][2]*t.Z + m.m[1][3]*t.W
+	z := m.m[2][0]*t.X + m.m[2][1]*t.Y + m.m[2][2]*t.Z + m.m[2][3]*t.W
+	w := m.m[3][0]*t.X + m.m[3][1]*t.Y + m.m[3][2]*t.Z + m.m[3][3]*t.W
+
+	return tuple.New(x, y, z, w)
+}
+
+func (m Matrix) Transpose() Matrix {
+	t := New(len(m.m), len(m.m[0]))
+
+	for j := 0; j < len(m.m); j++ {
+		for i := 0; i < len(m.m[0]); i++ {
+			t.m[i][j] = m.m[j][i]
+		}
+	}
+
+	return t
+}
+
+func (m Matrix) Determinant() float64 {
+	if len(m.m) == 2 {
+		return m.m[0][0]*m.m[1][1] - m.m[0][1]*m.m[1][0]
+	}
+
+	sum := 0.0
+
+	for j := range m.m {
+		cofactor := m.Cofactor(0, j)
+		sum += m.m[0][j] * cofactor
+	}
+
+	return sum
+}
+
+func (m Matrix) Submatrix(row, col int) Matrix {
+	sub := New(len(m.m)-1, len(m.m[0])-1)
+
+	for i := 0; i < len(m.m); i++ {
+		for j := 0; j < len(m.m[0]); j++ {
+			if i != row && j != col {
+				newi := i
+				newj := j
+				if i > row {
+					newi -= 1
+				}
+				if j > col {
+					newj -= 1
+				}
+
+				sub.m[newi][newj] = m.m[i][j]
+			}
+		}
+	}
+
+	return sub
+}
+
+func (m Matrix) Minor(row, col int) float64 {
+	return m.Submatrix(row, col).Determinant()
+}
+
+func (m Matrix) Cofactor(row, col int) float64 {
+	minor := m.Minor(row, col)
+	if (row+col)%2 != 0 {
+		return -minor
+	}
+	return minor
+}
+
+func (m Matrix) IsInvertible() bool {
+	return m.Determinant() != 0
+}
+
+func (m Matrix) Inverse() Matrix {
+	determinant := m.Determinant()
+	if determinant == 0 {
+		panic("matrix not invertible")
+	}
+
+	inverse := New(len(m.m), len(m.m[0]))
+	for i := 0; i < len(m.m); i++ {
+		for j := 0; j < len(m.m[0]); j++ {
+			c := m.Cofactor(i, j)
+			inverse.m[j][i] = c / determinant
+		}
+	}
+
+	return inverse
+}
+
+func Identity4() Matrix {
+	return NewFromSlice([][]float64{
+		{1, 0, 0, 0},
+		{0, 1, 0, 0},
+		{0, 0, 1, 0},
+		{0, 0, 0, 1},
+	})
 }
