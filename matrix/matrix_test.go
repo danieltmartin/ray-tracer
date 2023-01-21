@@ -396,3 +396,14 @@ func TestInverseTransposeCommutativity(t *testing.T) {
 
 	assert.True(t, a.Inverse().Transpose().Equals(a.Transpose().Inverse()))
 }
+
+func TestCopy(t *testing.T) {
+	a := NewFromSlice([][]float64{
+		{3, -9, 7, 3},
+		{3, -8, 2, -9},
+		{-4, 4, 4, 1},
+		{-6, 5, -1, 1},
+	})
+
+	assert.Equal(t, a, a.Copy())
+}

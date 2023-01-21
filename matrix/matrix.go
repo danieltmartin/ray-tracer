@@ -30,6 +30,20 @@ func NewFromSlice(s [][]float64) Matrix {
 	return Matrix{s}
 }
 
+func (m Matrix) Copy() Matrix {
+	rows := len(m.m)
+	cols := len(m.m[0])
+	m2 := make([][]float64, rows)
+	data := make([]float64, rows*cols)
+	for i := range m.m {
+		start := i * cols
+		end := start + cols
+		m2[i] = data[start:end:end]
+		copy(m2[i], m.m[i])
+	}
+	return NewFromSlice(m2)
+}
+
 func (m Matrix) At(x, y int) float64 {
 	return m.m[x][y]
 }
