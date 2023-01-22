@@ -4,6 +4,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/danieltmartin/ray-tracer/float"
 	"github.com/danieltmartin/ray-tracer/floatcolor"
 	"github.com/danieltmartin/ray-tracer/light"
 	"github.com/danieltmartin/ray-tracer/primitive"
@@ -68,19 +69,28 @@ func (w *World) shadeHit(hc hitComputations) floatcolor.Float64Color {
 		if light == nil {
 			continue
 		}
-		hitColor := hc.object.Material().Lighting(*light, hc.hitPoint, hc.eyev, hc.normalv)
+		inShadow := w.isShadowed(hc.overPoint, light.Position())
+		hitColor := hc.object.Material().Lighting(*light, hc.hitPoint, hc.eyev, hc.normalv, inShadow)
 		color = color.Add(hitColor)
 	}
 	return color
 }
 
+func (w *World) isShadowed(p tuple.Tuple, lightPosition tuple.Tuple) bool {
+	pointToLight := lightPosition.Sub(p)
+	lightDistance := pointToLight.Mag()
+	hit := w.Intersect(ray.New(p, pointToLight.Norm())).Hit()
+	return hit != nil && hit.Distance() < lightDistance
+}
+
 type hitComputations struct {
-	distance float64
-	object   primitive.Primitive
-	hitPoint tuple.Tuple
-	eyev     tuple.Tuple
-	normalv  tuple.Tuple
-	inside   bool
+	distance  float64
+	object    primitive.Primitive
+	hitPoint  tuple.Tuple
+	overPoint tuple.Tuple // Adjusted in normalv direction slightly for floating point precision sensitive calculations
+	eyev      tuple.Tuple
+	normalv   tuple.Tuple
+	inside    bool
 }
 
 func prepareHitComputations(intersection primitive.Intersection, ray ray.Ray) hitComputations {
@@ -96,6 +106,8 @@ func prepareHitComputations(intersection primitive.Intersection, ray ray.Ray) hi
 		hc.inside = true
 		hc.normalv = hc.normalv.Neg()
 	}
+
+	hc.overPoint = hc.hitPoint.Add(hc.normalv.Mul(float.Epsilon))
 
 	return hc
 }

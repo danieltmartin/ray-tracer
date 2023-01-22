@@ -63,13 +63,18 @@ func (m Material) Lighting(
 	light light.PointLight,
 	position tuple.Tuple,
 	eyev tuple.Tuple,
-	normalv tuple.Tuple) floatcolor.Float64Color {
+	normalv tuple.Tuple,
+	inShadow bool,
+) floatcolor.Float64Color {
 	effectiveColor := m.color.Hadamard(light.Intensity())
+	ambient := effectiveColor.Mul(m.ambient)
+	if inShadow {
+		return ambient
+	}
 
 	// Direction to the light source
 	lightv := light.Position().Sub(position).Norm()
 
-	ambient := effectiveColor.Mul(m.ambient)
 	diffuse := floatcolor.Black
 	specular := floatcolor.Black
 

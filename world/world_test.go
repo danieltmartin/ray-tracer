@@ -4,6 +4,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/danieltmartin/ray-tracer/float"
 	"github.com/danieltmartin/ray-tracer/floatcolor"
 	"github.com/danieltmartin/ray-tracer/light"
 	"github.com/danieltmartin/ray-tracer/material"
@@ -46,6 +47,18 @@ func TestPrecomputingIntersectionState(t *testing.T) {
 	assert.Equal(t, tuple.NewPoint(0, 0, -1), hc.hitPoint)
 	assert.Equal(t, tuple.NewVector(0, 0, -1), hc.eyev)
 	assert.Equal(t, tuple.NewVector(0, 0, -1), hc.normalv)
+}
+
+func TestPrecomputingOverpoint(t *testing.T) {
+	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	s := primitive.NewSphere()
+	s.SetTransform(transform.Translation(0, 0, 1))
+	i := primitive.NewIntersection(5, &s)
+
+	hc := prepareHitComputations(i, r)
+
+	assert.Less(t, hc.overPoint.Z, -float.Epsilon/2)
+	assert.Greater(t, hc.hitPoint.Z, hc.overPoint.Z)
 }
 
 func TestHitOutside(t *testing.T) {
@@ -99,6 +112,23 @@ func TestShadingAnIntersectionFromTheInside(t *testing.T) {
 	assert.True(t, floatcolor.New(0.90498, 0.90498, 0.90498).Equals(c))
 }
 
+func TestShadingAnIntersectionInAShadow(t *testing.T) {
+	w := New()
+	light := light.NewPointLight(tuple.NewPoint(0, 0, -10), floatcolor.White)
+	w.AddLights(&light)
+	s1 := primitive.NewSphere()
+	s2 := primitive.NewSphere()
+	s2.SetTransform(transform.Translation(0, 0, 10))
+	w.AddPrimitives(&s1, &s2)
+	r := ray.New(tuple.NewPoint(0, 0, 5), tuple.NewVector(0, 0, 1))
+	i := primitive.NewIntersection(4, &s2)
+
+	hc := prepareHitComputations(i, r)
+	c := w.shadeHit(hc)
+
+	assert.True(t, floatcolor.New(0.1, 0.1, 0.1).Equals(c))
+}
+
 func TestColorWhenRayMisses(t *testing.T) {
 	w := testWorld()
 	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 1, 0))
@@ -128,6 +158,34 @@ func TestColorWithIntersectionBehindRay(t *testing.T) {
 	c := w.ColorAt(r)
 
 	assert.True(t, innerSphere.Material().Color().Equals(c))
+}
+
+func TestNoShadowWhenNothingBetweenIntersectionAndLight(t *testing.T) {
+	w := testWorld()
+	p := tuple.NewPoint(0, 10, 0)
+
+	assert.False(t, w.isShadowed(p, w.Lights()[0].Position()))
+}
+
+func TestShadowWhenObjectIsBetweenIntersectionAndLight(t *testing.T) {
+	w := testWorld()
+	p := tuple.NewPoint(10, -10, 10)
+
+	assert.True(t, w.isShadowed(p, w.Lights()[0].Position()))
+}
+
+func TestNoShadowWhenObjectIsBehindLight(t *testing.T) {
+	w := testWorld()
+	p := tuple.NewPoint(-20, 20, -20)
+
+	assert.False(t, w.isShadowed(p, w.Lights()[0].Position()))
+}
+
+func TestNoShadowWhenObjectIsBehindPoint(t *testing.T) {
+	w := testWorld()
+	p := tuple.NewPoint(-2, 2, -2)
+
+	assert.False(t, w.isShadowed(p, w.Lights()[0].Position()))
 }
 
 func TestGenerateID(t *testing.T) {
