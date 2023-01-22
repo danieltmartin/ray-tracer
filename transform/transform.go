@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/danieltmartin/ray-tracer/matrix"
+	"github.com/danieltmartin/ray-tracer/tuple"
 )
 
 type Transform struct {
@@ -103,4 +104,17 @@ func Shearing(xy, xz, yx, yz, zx, zy float64) matrix.Matrix {
 		{zx, zy, 1, 0},
 		{0, 0, 0, 1},
 	})
+}
+
+func ViewTransform(from tuple.Tuple, to tuple.Tuple, up tuple.Tuple) matrix.Matrix {
+	forward := to.Sub(from).Norm()
+	left := forward.Cross(up.Norm())
+	trueUp := left.Cross(forward)
+	orientation := matrix.NewFromSlice([][]float64{
+		{left.X, left.Y, left.Z, 0},
+		{trueUp.X, trueUp.Y, trueUp.Z, 0},
+		{-forward.X, -forward.Y, -forward.Z, 0},
+		{0, 0, 0, 1},
+	})
+	return orientation.Mul(Translation(-from.X, -from.Y, -from.Z))
 }

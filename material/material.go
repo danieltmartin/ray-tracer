@@ -73,7 +73,7 @@ func (m Material) Lighting(
 	diffuse := floatcolor.Black
 	specular := floatcolor.Black
 
-	// Cosine of angle between light and normal. Negative means the light is on the other side of hte surface.
+	// Cosine of angle between light and normal. Negative means the light is on the other side of the surface.
 	lightDotNormal := lightv.Dot(normalv)
 	if lightDotNormal >= 0 {
 		diffuse = effectiveColor.Mul(m.diffuse).Mul(lightDotNormal)

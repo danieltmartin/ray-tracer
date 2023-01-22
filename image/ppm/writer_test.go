@@ -54,8 +54,8 @@ func TestSplitLongLines(t *testing.T) {
 
 	c := canvas.New(10, 2)
 	color := floatcolor.New(1, 0.8, 0.6)
-	for x := 0; x < 10; x++ {
-		for y := 0; y < 2; y++ {
+	for x := uint(0); x < 10; x++ {
+		for y := uint(0); y < 2; y++ {
 			c.WritePixel(x, y, color)
 		}
 	}

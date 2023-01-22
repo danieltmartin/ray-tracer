@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	canvasPixels := 800
+	canvasPixels := uint(800)
 	c := canvas.New(canvasPixels, canvasPixels)
 	s := primitive.NewSphere()
 
@@ -30,9 +30,9 @@ func main() {
 	pixelSize := wallSize / float64(canvasPixels)
 	half := wallSize / 2
 
-	for y := 0; y < canvasPixels; y++ {
+	for y := uint(0); y < canvasPixels; y++ {
 		worldY := half - pixelSize*float64(y)
-		for x := 0; x < canvasPixels; x++ {
+		for x := uint(0); x < canvasPixels; x++ {
 			worldX := -half + pixelSize*float64(x)
 
 			wallPosition := tuple.NewPoint(worldX, worldY, wallZ)

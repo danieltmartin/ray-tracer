@@ -10,11 +10,11 @@ import (
 func TestCreateCanvas(t *testing.T) {
 	c := New(10, 20)
 
-	assert.Equal(t, c.Width(), 10)
-	assert.Equal(t, c.Height(), 20)
+	assert.Equal(t, c.Width(), uint(10))
+	assert.Equal(t, c.Height(), uint(20))
 
-	for x := 0; x < 10; x++ {
-		for y := 0; y < 20; y++ {
+	for x := uint(0); x < 10; x++ {
+		for y := uint(0); y < 20; y++ {
 			assert.Equal(t, floatcolor.Black, c.PixelAt(x, y))
 		}
 	}

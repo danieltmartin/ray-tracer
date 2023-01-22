@@ -23,7 +23,7 @@ func main() {
 			Translation(400, 400, 0).
 			Matrix().
 			MulTuple(top)
-		c.WritePixel(int(point.X), c.Height()-int(point.Y), floatcolor.White)
+		c.WritePixel(uint(point.X), c.Height()-uint(point.Y), floatcolor.White)
 	}
 
 	f, err := os.Create("clock.ppm")

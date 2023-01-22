@@ -9,31 +9,31 @@ import (
 
 type Canvas struct {
 	pixels []floatcolor.Float64Color
-	width  int
-	height int
+	width  uint
+	height uint
 }
 
-func New(width, height int) Canvas {
+func New(width, height uint) Canvas {
 	pixels := make([]floatcolor.Float64Color, width*height)
 	return Canvas{
 		pixels, width, height,
 	}
 }
 
-func (c Canvas) Width() int {
+func (c Canvas) Width() uint {
 	return c.width
 }
 
-func (c Canvas) Height() int {
+func (c Canvas) Height() uint {
 	return c.height
 }
 
-func (c Canvas) PixelAt(x, y int) floatcolor.Float64Color {
+func (c Canvas) PixelAt(x, y uint) floatcolor.Float64Color {
 	return c.pixels[x+y*c.width]
 }
 
-func (c Canvas) WritePixel(x, y int, col floatcolor.Float64Color) {
-	if x < 0 || y < 0 || x > c.width-1 || y > c.height-1 {
+func (c Canvas) WritePixel(x, y uint, col floatcolor.Float64Color) {
+	if x > c.width-1 || y > c.height-1 {
 		return
 	}
 	c.pixels[x+y*c.width] = col
@@ -44,9 +44,9 @@ func (c Canvas) ColorModel() color.Model {
 }
 
 func (c Canvas) Bounds() image.Rectangle {
-	return image.Rect(0, 0, c.width, c.height)
+	return image.Rect(0, 0, int(c.width), int(c.height))
 }
 
 func (c Canvas) At(x, y int) color.Color {
-	return c.PixelAt(x, y)
+	return c.PixelAt(uint(x), uint(y))
 }

@@ -31,11 +31,11 @@ func main() {
 	}
 
 	c := canvas.New(900, 550)
-	c.WritePixel(int(p.position.X), c.Height()-int(p.position.Y), floatcolor.Red)
+	c.WritePixel(uint(p.position.X), c.Height()-uint(p.position.Y), floatcolor.Red)
 
 	for p.position.Y > 0 {
 		p = tick(e, p)
-		c.WritePixel(int(p.position.X), c.Height()-int(p.position.Y), floatcolor.Red)
+		c.WritePixel(uint(p.position.X), c.Height()-uint(p.position.Y), floatcolor.Red)
 	}
 	f, err := os.Create("projectile.ppm")
 	if err != nil {
