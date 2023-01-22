@@ -3,6 +3,8 @@ package camera
 import (
 	"image"
 	"math"
+	"runtime"
+	"sync"
 
 	"github.com/danieltmartin/ray-tracer/canvas"
 	"github.com/danieltmartin/ray-tracer/matrix"
@@ -61,13 +63,25 @@ func (c *Camera) RayForPixel(px, py uint) ray.Ray {
 func (c *Camera) Render(w *world.World) image.Image {
 	canvas := canvas.New(c.hsize, c.vsize)
 
+	semaphore := make(chan bool, runtime.NumCPU())
+	var wg sync.WaitGroup
+
 	for y := uint(0); y < c.vsize; y++ {
-		for x := uint(0); x < c.hsize; x++ {
-			r := c.RayForPixel(x, y)
-			color := w.ColorAt(r)
-			canvas.WritePixel(x, y, color)
-		}
+		semaphore <- true // Acquire
+		wg.Add(1)
+
+		go func(y uint) {
+			defer wg.Done()
+			for x := uint(0); x < c.hsize; x++ {
+				r := c.RayForPixel(x, y)
+				color := w.ColorAt(r)
+				canvas.WritePixel(x, y, color)
+			}
+			<-semaphore // Release
+		}(y)
 	}
+
+	wg.Wait()
 
 	return canvas
 }
