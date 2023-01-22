@@ -1,4 +1,4 @@
-package intersect
+package primitive
 
 import "github.com/danieltmartin/ray-tracer/ray"
 
@@ -8,10 +8,10 @@ type Intersecter interface {
 
 type Intersection struct {
 	distance float64
-	object   Intersecter
+	object   Primitive
 }
 
-func New(distance float64, object Intersecter) Intersection {
+func NewIntersection(distance float64, object Primitive) Intersection {
 	return Intersection{distance, object}
 }
 
@@ -19,7 +19,7 @@ func (i Intersection) Distance() float64 {
 	return i.distance
 }
 
-func (i Intersection) Object() Intersecter {
+func (i Intersection) Object() Primitive {
 	return i.object
 }
 

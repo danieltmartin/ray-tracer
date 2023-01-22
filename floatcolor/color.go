@@ -3,6 +3,8 @@ package floatcolor
 import (
 	"image/color"
 	"math"
+
+	"github.com/danieltmartin/ray-tracer/float"
 )
 
 type Float64Color struct {
@@ -55,6 +57,10 @@ func (c Float64Color) Mul(v float64) Float64Color {
 
 func (c Float64Color) Hadamard(c2 Float64Color) Float64Color {
 	return Float64Color{c.r * c2.r, c.g * c2.g, c.b * c2.b}
+}
+
+func (c Float64Color) Equals(c2 Float64Color) bool {
+	return float.Equal(c.r, c2.r) && float.Equal(c.g, c2.g) && float.Equal(c.b, c2.b)
 }
 
 var Float64Model = color.ModelFunc(float64Model)

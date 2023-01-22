@@ -1,29 +1,24 @@
-package intersect
+package primitive
 
 import (
 	"testing"
 
-	"github.com/danieltmartin/ray-tracer/ray"
 	"github.com/stretchr/testify/assert"
 )
 
-type DummyIntersecter bool
-
-func (DummyIntersecter) Intersects(r ray.Ray) Intersections { return nil }
-
 func TestIntersectionEncapsulatesDistanceAndObject(t *testing.T) {
-	var o DummyIntersecter
-	i := New(3.5, o)
+	o := NewSphere()
+	i := NewIntersection(3.5, &o)
 
 	assert.Equal(t, 3.5, i.Distance())
-	assert.Equal(t, o, i.Object())
+	assert.Equal(t, &o, i.Object())
 }
 
 func TestAggregatingIntersections(t *testing.T) {
-	var o DummyIntersecter
+	o := NewSphere()
 
-	i1 := New(1, o)
-	i2 := New(2, o)
+	i1 := NewIntersection(1, &o)
+	i2 := NewIntersection(2, &o)
 
 	xs := NewIntersections(i1, i2)
 
@@ -33,10 +28,10 @@ func TestAggregatingIntersections(t *testing.T) {
 }
 
 func TestHitAllPositiveDistance(t *testing.T) {
-	var o DummyIntersecter
+	o := NewSphere()
 
-	i1 := New(1, o)
-	i2 := New(2, o)
+	i1 := NewIntersection(1, &o)
+	i2 := NewIntersection(2, &o)
 	xs := NewIntersections(i2, i1)
 
 	i := xs.Hit()
@@ -45,10 +40,10 @@ func TestHitAllPositiveDistance(t *testing.T) {
 }
 
 func TestHitSomeNegative(t *testing.T) {
-	var o DummyIntersecter
+	o := NewSphere()
 
-	i1 := New(-1, o)
-	i2 := New(1, o)
+	i1 := NewIntersection(-1, &o)
+	i2 := NewIntersection(1, &o)
 	xs := NewIntersections(i2, i1)
 
 	i := xs.Hit()
@@ -57,10 +52,10 @@ func TestHitSomeNegative(t *testing.T) {
 }
 
 func TestHitAllNegative(t *testing.T) {
-	var o DummyIntersecter
+	o := NewSphere()
 
-	i1 := New(-2, o)
-	i2 := New(-1, o)
+	i1 := NewIntersection(-2, &o)
+	i2 := NewIntersection(-1, &o)
 	xs := NewIntersections(i2, i1)
 
 	i := xs.Hit()
@@ -69,12 +64,12 @@ func TestHitAllNegative(t *testing.T) {
 }
 
 func TestHitIsAlwaysLowestNonNegativeDistance(t *testing.T) {
-	var o DummyIntersecter
+	o := NewSphere()
 
-	i1 := New(5, o)
-	i2 := New(7, o)
-	i3 := New(-7, o)
-	i4 := New(2, o)
+	i1 := NewIntersection(5, &o)
+	i2 := NewIntersection(7, &o)
+	i3 := NewIntersection(-7, &o)
+	i4 := NewIntersection(2, &o)
 	xs := NewIntersections(i1, i2, i3, i4)
 
 	i := xs.Hit()

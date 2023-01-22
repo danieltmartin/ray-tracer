@@ -58,6 +58,9 @@ func Translation(x, y, z float64) matrix.Matrix {
 }
 
 func Scaling(x, y, z float64) matrix.Matrix {
+	if x == 0 || y == 0 || z == 0 {
+		panic("cannot scale to 0")
+	}
 	return matrix.NewFromSlice([][]float64{
 		{x, 0, 0, 0},
 		{0, y, 0, 0},

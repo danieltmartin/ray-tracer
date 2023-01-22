@@ -164,6 +164,15 @@ func TestCrossProduct(t *testing.T) {
 	assert.Equal(t, v2.Cross(v1), NewVector(1, -2, 1))
 }
 
+func TestReflect(t *testing.T) {
+	v := NewVector(0, -1, 0)
+	n := NewVector(math.Sqrt2/2, math.Sqrt2/2, 0)
+
+	r := v.Reflect(n)
+
+	assert.True(t, NewVector(1, 0, 0).Equals(r))
+}
+
 func assertAlmost(t *testing.T, t1 Tuple, t2 Tuple) {
 	assert.True(t, float.Equal(t1.X, t2.X), "X values differ: t1.X=%v, t2.X=%v", t1.X, t2.X)
 	assert.True(t, float.Equal(t1.Y, t2.Y), "Y values differ: t1.Y=%v, t2.Y=%v", t1.Y, t2.Y)

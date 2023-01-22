@@ -103,3 +103,7 @@ func (t Tuple) Cross(t2 Tuple) Tuple {
 		0.0,
 	}
 }
+
+func (t Tuple) Reflect(normal Tuple) Tuple {
+	return t.Sub(normal.Mul(2).Mul(t.Dot(normal)))
+}
