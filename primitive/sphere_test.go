@@ -15,7 +15,7 @@ func TestRayIntersectsSphereAtTwoPoints(t *testing.T) {
 	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 	s := NewSphere()
 
-	xs := s.LocalIntersects(r)
+	xs := s.localIntersects(r)
 
 	require.Len(t, xs, 2)
 	assert.Equal(t, NewIntersection(4.0, &s), xs[0])
@@ -26,7 +26,7 @@ func TestRayIntersectsSphereAtTangent(t *testing.T) {
 	r := ray.New(tuple.NewPoint(0, 1, -5), tuple.NewVector(0, 0, 1))
 	s := NewSphere()
 
-	xs := s.LocalIntersects(r)
+	xs := s.localIntersects(r)
 
 	require.Len(t, xs, 2)
 	assert.Equal(t, NewIntersection(5.0, &s), xs[0])
@@ -37,7 +37,7 @@ func TestRayMissesSphere(t *testing.T) {
 	r := ray.New(tuple.NewPoint(0, 2, -5), tuple.NewVector(0, 0, 1))
 	s := NewSphere()
 
-	xs := s.LocalIntersects(r)
+	xs := s.localIntersects(r)
 
 	require.Empty(t, xs)
 }
@@ -46,7 +46,7 @@ func TestRayInsideSphere(t *testing.T) {
 	r := ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
 	s := NewSphere()
 
-	xs := s.LocalIntersects(r)
+	xs := s.localIntersects(r)
 
 	require.Len(t, xs, 2)
 	assert.Equal(t, NewIntersection(-1.0, &s), xs[0])
@@ -57,7 +57,7 @@ func TestSphereBehindRay(t *testing.T) {
 	r := ray.New(tuple.NewPoint(0, 0, 5), tuple.NewVector(0, 0, 1))
 	s := NewSphere()
 
-	xs := s.LocalIntersects(r)
+	xs := s.localIntersects(r)
 
 	require.Len(t, xs, 2)
 	assert.Equal(t, NewIntersection(-6.0, &s), xs[0])

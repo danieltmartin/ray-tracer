@@ -58,11 +58,21 @@ func (d *Data) worldRayToLocal(r ray.Ray) ray.Ray {
 	return r.Transform(d.transform.Inverse())
 }
 
-type LocalIntersecter interface {
-	LocalIntersects(localRay ray.Ray) Intersections
+type localIntersecter interface {
+	localIntersects(localRay ray.Ray) Intersections
 }
 
-func (d *Data) worldIntersects(worldRay ray.Ray, localIntersecter LocalIntersecter) Intersections {
+func (d *Data) worldIntersects(worldRay ray.Ray, localIntersecter localIntersecter) Intersections {
 	localRay := d.worldRayToLocal(worldRay)
-	return localIntersecter.LocalIntersects(localRay)
+	return localIntersecter.localIntersects(localRay)
+}
+
+type localNormalizer interface {
+	localNormalAt(localPoint tuple.Tuple) tuple.Tuple
+}
+
+func (d *Data) worldNormalAt(worldPoint tuple.Tuple, localNormalizer localNormalizer) tuple.Tuple {
+	localPoint := d.worldPointToLocal(worldPoint)
+	localNormal := localNormalizer.localNormalAt(localPoint)
+	return d.localNormalToWorld(localNormal)
 }

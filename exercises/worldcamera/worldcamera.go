@@ -15,23 +15,20 @@ import (
 )
 
 func main() {
-	floor := primitive.NewSphere()
-	floor.SetTransform(transform.Scaling(10, 0.01, 10))
+	floor := primitive.NewPlane()
 	floor.SetMaterial(floor.Material().
 		WithColor(floatcolor.New(1, 0.9, 0.9)).
 		WithSpecular(0))
 
-	leftWall := primitive.NewSphere()
+	leftWall := primitive.NewPlane()
 	leftWall.SetTransform(transform.Identity().
-		Scaling(10, 0.01, 10).
 		RotationX(math.Pi/2).
 		RotationY(-math.Pi/4).
 		Translation(0, 0, 5).
 		Matrix())
 
-	rightWall := primitive.NewSphere()
+	rightWall := primitive.NewPlane()
 	rightWall.SetTransform(transform.Identity().
-		Scaling(10, 0.01, 10).
 		RotationX(math.Pi/2).
 		RotationY(math.Pi/4).
 		Translation(0, 0, 5).
@@ -70,7 +67,7 @@ func main() {
 	world.AddPrimitives(&floor, &leftWall, &rightWall, &middleSphere, &leftSphere, &rightSphere)
 	world.AddLights(&light)
 
-	camera := camera.New(1920, 1080, math.Pi/3)
+	camera := camera.New(400, 300, math.Pi/3)
 	camera.SetTransform(transform.ViewTransform(
 		tuple.NewPoint(0, 1.5, -5),
 		tuple.NewPoint(0, 1, 0),
