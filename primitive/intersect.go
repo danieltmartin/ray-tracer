@@ -1,11 +1,5 @@
 package primitive
 
-import "github.com/danieltmartin/ray-tracer/ray"
-
-type Intersecter interface {
-	Intersects(r ray.Ray) Intersections
-}
-
 type Intersection struct {
 	distance float64
 	object   Primitive

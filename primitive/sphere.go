@@ -3,42 +3,29 @@ package primitive
 import (
 	"math"
 
-	"github.com/danieltmartin/ray-tracer/material"
-	"github.com/danieltmartin/ray-tracer/matrix"
 	"github.com/danieltmartin/ray-tracer/ray"
 	"github.com/danieltmartin/ray-tracer/tuple"
 )
 
 type Sphere struct {
-	transform matrix.Matrix
-	material  material.Material
+	Data
 }
 
 func NewSphere() Sphere {
 	return Sphere{
-		matrix.Identity4(),
-		material.Default,
+		newData(),
 	}
 }
 
-func (s *Sphere) SetTransform(m matrix.Matrix) {
-	s.transform = m
+func (s *Sphere) Intersects(worldRay ray.Ray) Intersections {
+	return s.worldIntersects(worldRay, s)
 }
 
-func (s *Sphere) SetMaterial(m material.Material) {
-	s.material = m
-}
+func (s *Sphere) LocalIntersects(localRay ray.Ray) Intersections {
+	sphereToRay := localRay.Origin().Sub(tuple.NewPoint(0, 0, 0))
 
-func (s *Sphere) Material() material.Material {
-	return s.material
-}
-
-func (s *Sphere) Intersects(r ray.Ray) Intersections {
-	r = r.Transform(s.transform.Inverse())
-	sphereToRay := r.Origin().Sub(tuple.NewPoint(0, 0, 0))
-
-	a := r.Direction().Dot(r.Direction())
-	b := 2 * r.Direction().Dot(sphereToRay)
+	a := localRay.Direction().Dot(localRay.Direction())
+	b := 2 * localRay.Direction().Dot(sphereToRay)
 	c := sphereToRay.Dot(sphereToRay) - 1
 
 	discriminant := b*b - 4*a*c
@@ -54,8 +41,7 @@ func (s *Sphere) Intersects(r ray.Ray) Intersections {
 }
 
 func (s *Sphere) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
-	objectPoint := s.transform.Inverse().MulTuple(worldPoint)
-	objectNormal := objectPoint.Sub(tuple.NewPoint(0, 0, 0))
-	worldNormal := s.transform.Inverse().Transpose().MulTuple(objectNormal)
-	return tuple.New(worldNormal.X, worldNormal.Y, worldNormal.Z, 0).Norm()
+	localPoint := s.worldPointToLocal(worldPoint)
+	localNormal := localPoint.Sub(tuple.NewPoint(0, 0, 0))
+	return s.localNormalToWorld(localNormal)
 }
