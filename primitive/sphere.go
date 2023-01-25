@@ -8,7 +8,7 @@ import (
 )
 
 type Sphere struct {
-	Data
+	data
 }
 
 func NewSphere() Sphere {

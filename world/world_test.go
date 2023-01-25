@@ -157,7 +157,7 @@ func TestColorWithIntersectionBehindRay(t *testing.T) {
 
 	c := w.ColorAt(r)
 
-	assert.True(t, innerSphere.Material().Color().Equals(c))
+	assert.True(t, floatcolor.White.Equals(c))
 }
 
 func TestNoShadowWhenNothingBetweenIntersectionAndLight(t *testing.T) {

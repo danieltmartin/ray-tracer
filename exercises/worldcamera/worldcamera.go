@@ -8,6 +8,7 @@ import (
 	"github.com/danieltmartin/ray-tracer/floatcolor"
 	"github.com/danieltmartin/ray-tracer/image/ppm"
 	"github.com/danieltmartin/ray-tracer/light"
+	"github.com/danieltmartin/ray-tracer/material"
 	"github.com/danieltmartin/ray-tracer/primitive"
 	"github.com/danieltmartin/ray-tracer/transform"
 	"github.com/danieltmartin/ray-tracer/tuple"
@@ -17,7 +18,9 @@ import (
 func main() {
 	floor := primitive.NewPlane()
 	floor.SetMaterial(floor.Material().
-		WithColor(floatcolor.New(1, 0.9, 0.9)).
+		WithPattern(material.NewGradientPattern(
+			floatcolor.NewFromInt(0x24FFFF), floatcolor.NewFromInt(0xFFFFFF)).
+			WithTransform(transform.RotationY(math.Pi / 8))).
 		WithSpecular(0))
 
 	leftWall := primitive.NewPlane()
@@ -35,9 +38,11 @@ func main() {
 		Matrix())
 
 	middleSphere := primitive.NewSphere()
-	middleSphere.SetTransform(transform.Translation(-0.5, 1, 0.5))
+	middleSphere.SetTransform(transform.Identity().RotationX(math.Pi).Translation(-0.5, 1, 0.5).Matrix())
 	middleSphere.SetMaterial(floor.Material().
-		WithColor(floatcolor.New(0.1, 1, 0.5)).
+		WithPattern(material.NewGradientPattern(
+			floatcolor.NewFromInt(0x9f45FF), floatcolor.NewFromInt(0x05020D)).
+			WithTransform(transform.RotationY(math.Pi / 8))).
 		WithDiffuse(0.7).
 		WithSpecular(0.3))
 
@@ -47,7 +52,9 @@ func main() {
 		Translation(1.5, 0.5, -0.5).
 		Matrix())
 	rightSphere.SetMaterial(floor.Material().
-		WithColor(floatcolor.New(0.5, 1, 0.1)).
+		WithPattern(material.NewGradientPattern(
+			floatcolor.NewFromInt(0x9f45FF), floatcolor.NewFromInt(0x05020D)).
+			WithTransform(transform.RotationY(math.Pi / 8))).
 		WithDiffuse(0.7).
 		WithSpecular(0.3))
 
@@ -67,7 +74,7 @@ func main() {
 	world.AddPrimitives(&floor, &leftWall, &rightWall, &middleSphere, &leftSphere, &rightSphere)
 	world.AddLights(&light)
 
-	camera := camera.New(400, 300, math.Pi/3)
+	camera := camera.New(1920, 1080, math.Pi/3)
 	camera.SetTransform(transform.ViewTransform(
 		tuple.NewPoint(0, 1.5, -5),
 		tuple.NewPoint(0, 1, 0),
@@ -76,7 +83,7 @@ func main() {
 
 	image := camera.Render(world)
 
-	f, err := os.Create("worldcamera.ppm")
+	f, err := os.Create("worldcamera2.ppm")
 	if err != nil {
 		panic(err)
 	}

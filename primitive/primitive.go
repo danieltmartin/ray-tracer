@@ -17,44 +17,44 @@ type Primitive interface {
 	Intersects(worldRay ray.Ray) Intersections
 }
 
-type Data struct {
+type data struct {
 	material  material.Material
 	transform matrix.Matrix
 }
 
-func newData() Data {
-	return Data{
+func newData() data {
+	return data{
 		material.Default,
 		matrix.Identity4(),
 	}
 }
 
-func (d *Data) Material() material.Material {
+func (d *data) Material() material.Material {
 	return d.material
 }
 
-func (d *Data) Transform() matrix.Matrix {
+func (d *data) Transform() matrix.Matrix {
 	return d.transform
 }
 
-func (d *Data) SetTransform(m matrix.Matrix) {
+func (d *data) SetTransform(m matrix.Matrix) {
 	d.transform = m
 }
 
-func (d *Data) SetMaterial(m material.Material) {
+func (d *data) SetMaterial(m material.Material) {
 	d.material = m
 }
 
-func (d *Data) worldPointToLocal(world tuple.Tuple) tuple.Tuple {
+func (d *data) worldPointToLocal(world tuple.Tuple) tuple.Tuple {
 	return d.transform.Inverse().MulTuple(world)
 }
 
-func (d *Data) localNormalToWorld(localNormal tuple.Tuple) tuple.Tuple {
+func (d *data) localNormalToWorld(localNormal tuple.Tuple) tuple.Tuple {
 	worldNormal := d.transform.Inverse().Transpose().MulTuple(localNormal)
 	return tuple.New(worldNormal.X, worldNormal.Y, worldNormal.Z, 0).Norm()
 }
 
-func (d *Data) worldRayToLocal(r ray.Ray) ray.Ray {
+func (d *data) worldRayToLocal(r ray.Ray) ray.Ray {
 	return r.Transform(d.transform.Inverse())
 }
 
@@ -62,7 +62,7 @@ type localIntersecter interface {
 	localIntersects(localRay ray.Ray) Intersections
 }
 
-func (d *Data) worldIntersects(worldRay ray.Ray, localIntersecter localIntersecter) Intersections {
+func (d *data) worldIntersects(worldRay ray.Ray, localIntersecter localIntersecter) Intersections {
 	localRay := d.worldRayToLocal(worldRay)
 	return localIntersecter.localIntersects(localRay)
 }
@@ -71,7 +71,7 @@ type localNormalizer interface {
 	localNormalAt(localPoint tuple.Tuple) tuple.Tuple
 }
 
-func (d *Data) worldNormalAt(worldPoint tuple.Tuple, localNormalizer localNormalizer) tuple.Tuple {
+func (d *data) worldNormalAt(worldPoint tuple.Tuple, localNormalizer localNormalizer) tuple.Tuple {
 	localPoint := d.worldPointToLocal(worldPoint)
 	localNormal := localNormalizer.localNormalAt(localPoint)
 	return d.localNormalToWorld(localNormal)

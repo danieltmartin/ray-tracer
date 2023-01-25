@@ -43,7 +43,7 @@ func main() {
 				point := r.Position(hit.Distance())
 				normal := hit.Object().NormalAt(point)
 				eye := r.Direction().Neg()
-				color := hit.Object().Material().Lighting(light, point, eye, normal, false)
+				color := hit.Object().Material().Lighting(&s, light, point, eye, normal, false)
 				c.WritePixel(x, y, color)
 			}
 		}

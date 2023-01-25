@@ -8,19 +8,15 @@ import (
 	"github.com/danieltmartin/ray-tracer/tuple"
 )
 
-var Default = New(floatcolor.White, 0.1, 0.9, 0.9, 200.0)
+var Default = New(SolidPattern(floatcolor.White), 0.1, 0.9, 0.9, 200.0)
 
 type Material struct {
-	color                                 floatcolor.Float64Color
+	pattern                               Pattern
 	ambient, diffuse, specular, shininess float64
 }
 
-func New(color floatcolor.Float64Color, ambient, diffuse, specular, shininess float64) Material {
-	return Material{color, ambient, diffuse, specular, shininess}
-}
-
-func (m Material) Color() floatcolor.Float64Color {
-	return m.color
+func New(pattern Pattern, ambient, diffuse, specular, shininess float64) Material {
+	return Material{pattern, ambient, diffuse, specular, shininess}
 }
 
 func (m Material) Ambient() float64 {
@@ -39,34 +35,59 @@ func (m Material) Shininess() float64 {
 	return m.shininess
 }
 
+func (m Material) Pattern() Pattern {
+	return m.pattern
+}
+
 func (m Material) WithColor(color floatcolor.Float64Color) Material {
-	return New(color, m.ambient, m.diffuse, m.specular, m.shininess)
+	c := m.copy()
+	c.pattern = SolidPattern(color)
+	return c
 }
 
 func (m Material) WithAmbient(a float64) Material {
-	return New(m.color, a, m.diffuse, m.specular, m.shininess)
+	c := m.copy()
+	c.ambient = a
+	return c
 }
 
 func (m Material) WithDiffuse(d float64) Material {
-	return New(m.color, m.ambient, d, m.specular, m.shininess)
+	c := m.copy()
+	c.diffuse = d
+	return c
 }
 
 func (m Material) WithSpecular(s float64) Material {
-	return New(m.color, m.ambient, m.diffuse, s, m.shininess)
+	c := m.copy()
+	c.specular = s
+	return c
 }
 
 func (m Material) WithShininess(s float64) Material {
-	return New(m.color, m.ambient, m.diffuse, m.specular, s)
+	c := m.copy()
+	c.shininess = s
+	return c
+}
+
+func (m Material) WithPattern(p Pattern) Material {
+	c := m.copy()
+	c.pattern = p
+	return c
+}
+
+func (m Material) copy() Material {
+	return Material{m.pattern, m.ambient, m.diffuse, m.specular, m.shininess}
 }
 
 func (m Material) Lighting(
+	object Object,
 	light light.PointLight,
 	position tuple.Tuple,
 	eyev tuple.Tuple,
 	normalv tuple.Tuple,
 	inShadow bool,
 ) floatcolor.Float64Color {
-	effectiveColor := m.color.Hadamard(light.Intensity())
+	effectiveColor := m.pattern.colorAtObject(object, position).Hadamard(light.Intensity())
 	ambient := effectiveColor.Mul(m.ambient)
 	if inShadow {
 		return ambient

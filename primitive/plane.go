@@ -9,7 +9,7 @@ import (
 )
 
 type Plane struct {
-	Data
+	data
 }
 
 func NewPlane() Plane {
