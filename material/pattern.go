@@ -30,8 +30,7 @@ func (s SolidPattern) transform() matrix.Matrix {
 }
 
 type StripePattern struct {
-	color1 floatcolor.Float64Color
-	color2 floatcolor.Float64Color
+	color1, color2 floatcolor.Float64Color
 	patternTransform
 }
 
@@ -55,8 +54,7 @@ func (p StripePattern) colorAtObject(object Object, worldPoint tuple.Tuple) floa
 }
 
 type GradientPattern struct {
-	fromColor floatcolor.Float64Color
-	toColor   floatcolor.Float64Color
+	fromColor, toColor floatcolor.Float64Color
 	patternTransform
 }
 
@@ -82,6 +80,57 @@ func (s GradientPattern) colorAt(point tuple.Tuple) floatcolor.Float64Color {
 
 func (p GradientPattern) colorAtObject(object Object, worldPoint tuple.Tuple) floatcolor.Float64Color {
 	return p.colorAt(toPatternPoint(p, object, worldPoint))
+}
+
+type RingPattern struct {
+	fromColor, toColor floatcolor.Float64Color
+	patternTransform
+}
+
+func NewRingPattern(fromColor, toColor floatcolor.Float64Color) RingPattern {
+	return RingPattern{fromColor, toColor, patternTransform(matrix.Identity4())}
+}
+
+func (r RingPattern) WithTransform(transform matrix.Matrix) RingPattern {
+	return RingPattern{r.fromColor, r.toColor, patternTransform(transform)}
+}
+
+func (r RingPattern) colorAt(point tuple.Tuple) floatcolor.Float64Color {
+	d := math.Sqrt(point.X*point.X + point.Z*point.Z)
+	if int(math.Floor(d))%2 == 0 {
+		return r.fromColor
+	}
+	return r.toColor
+}
+
+func (r RingPattern) colorAtObject(object Object, worldPoint tuple.Tuple) floatcolor.Float64Color {
+	return r.colorAt(toPatternPoint(r, object, worldPoint))
+}
+
+type CheckerPattern struct {
+	color1, color2 floatcolor.Float64Color
+	patternTransform
+}
+
+func NewCheckerPattern(color1, color2 floatcolor.Float64Color) CheckerPattern {
+	return CheckerPattern{color1, color2, patternTransform(matrix.Identity4())}
+}
+
+func (r CheckerPattern) WithTransform(transform matrix.Matrix) CheckerPattern {
+	return CheckerPattern{r.color1, r.color2, patternTransform(transform)}
+}
+
+func (r CheckerPattern) colorAt(point tuple.Tuple) floatcolor.Float64Color {
+	x, y, z, _ := point.XYZW()
+	if int(math.Floor(x)+math.Floor(y)+math.Floor(z))%2 == 0 {
+		return r.color1
+	}
+	return r.color2
+}
+
+func (r CheckerPattern) colorAtObject(object Object, worldPoint tuple.Tuple) floatcolor.Float64Color {
+	patternPoint := toPatternPoint(r, object, worldPoint)
+	return r.colorAt(patternPoint)
 }
 
 type Object interface {

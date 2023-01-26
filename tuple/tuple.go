@@ -37,6 +37,10 @@ func (t Tuple) IsVector() bool {
 	return !t.IsPoint()
 }
 
+func (t Tuple) XYZW() (float64, float64, float64, float64) {
+	return t.X, t.Y, t.Z, t.W
+}
+
 func (t Tuple) Add(t2 Tuple) Tuple {
 	return Tuple{
 		t.X + t2.X,

@@ -70,7 +70,7 @@ func (w *World) shadeHit(hc hitComputations) floatcolor.Float64Color {
 			continue
 		}
 		inShadow := w.isShadowed(hc.overPoint, light.Position())
-		hitColor := hc.object.Material().Lighting(hc.object, *light, hc.hitPoint, hc.eyev, hc.normalv, inShadow)
+		hitColor := hc.object.Material().Lighting(hc.object, *light, hc.overPoint, hc.eyev, hc.normalv, inShadow)
 		color = color.Add(hitColor)
 	}
 	return color

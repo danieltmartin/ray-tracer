@@ -86,6 +86,46 @@ func TestGradientPatternLinearlyInterpolatesBetweenColors(t *testing.T) {
 	assertColorsEqual(t, floatcolor.New(0.25, 0.25, 0.25), p.colorAt(tuple.NewPoint(0.75, 0, 0)))
 }
 
+func TestRingPatternExtendsBothInXAndZ(t *testing.T) {
+	p := NewRingPattern(floatcolor.White, floatcolor.Black)
+
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(0, 0, 0)))
+	assert.Equal(t, floatcolor.Black, p.colorAt(tuple.NewPoint(1, 0, 0)))
+	assert.Equal(t, floatcolor.Black, p.colorAt(tuple.NewPoint(0, 0, 1)))
+	assert.Equal(t, floatcolor.Black, p.colorAt(tuple.NewPoint(0.708, 0, 0.708)))
+}
+
+func TestCheckerPatternShouldRepeatInX(t *testing.T) {
+	p := NewCheckerPattern(floatcolor.White, floatcolor.Black)
+
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(0, 0, 0)))
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(0.99, 0, 0)))
+	assert.Equal(t, floatcolor.Black, p.colorAt(tuple.NewPoint(1.01, 0, 0)))
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(2.01, 0, 0)))
+	assert.Equal(t, floatcolor.Black, p.colorAt(tuple.NewPoint(-0.99, 0, 0)))
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(-1.01, 0, 0)))
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(-1.99, 0, 0)))
+}
+
+func TestCheckerPatternShouldRepeatInY(t *testing.T) {
+	p := NewCheckerPattern(floatcolor.White, floatcolor.Black)
+
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(0, 0, 0)))
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(0, 0.99, 0)))
+	assert.Equal(t, floatcolor.Black, p.colorAt(tuple.NewPoint(0, 1.01, 0)))
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(0, 2.01, 0)))
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(0, -1.01, 0)))
+}
+
+func TestCheckerPatternShouldRepeatInZ(t *testing.T) {
+	p := NewCheckerPattern(floatcolor.White, floatcolor.Black)
+
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(0, 0, 0)))
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(0, 0, 0.99)))
+	assert.Equal(t, floatcolor.Black, p.colorAt(tuple.NewPoint(0, 0, 1.01)))
+	assert.Equal(t, floatcolor.White, p.colorAt(tuple.NewPoint(0, 0, 2.01)))
+}
+
 func assertColorsEqual(t *testing.T, expected, actual floatcolor.Float64Color) {
 	assert.Truef(t, expected.AlmostEquals(actual, 0.1), "expected %v to equal %v", expected, actual)
 }

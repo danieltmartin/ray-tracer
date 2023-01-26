@@ -18,9 +18,8 @@ import (
 func main() {
 	floor := primitive.NewPlane()
 	floor.SetMaterial(floor.Material().
-		WithPattern(material.NewGradientPattern(
-			floatcolor.NewFromInt(0x24FFFF), floatcolor.NewFromInt(0xFFFFFF)).
-			WithTransform(transform.RotationY(math.Pi / 8))).
+		WithPattern(material.NewCheckerPattern(
+			floatcolor.NewFromInt(0xded3d3), floatcolor.NewFromInt(0x87a9cc))).
 		WithSpecular(0))
 
 	leftWall := primitive.NewPlane()
@@ -31,6 +30,8 @@ func main() {
 		Matrix())
 
 	rightWall := primitive.NewPlane()
+	rightWall.SetMaterial(material.Default.
+		WithPattern(material.NewRingPattern(floatcolor.NewFromInt(0x1f005c), floatcolor.NewFromInt(0xffb56b)).WithTransform(transform.Scaling(0.5, 0.5, 0.5))))
 	rightWall.SetTransform(transform.Identity().
 		RotationX(math.Pi/2).
 		RotationY(math.Pi/4).
@@ -64,7 +65,7 @@ func main() {
 		Translation(-1.5, 0.33, -0.75).
 		Matrix())
 	leftSphere.SetMaterial(floor.Material().
-		WithColor(floatcolor.New(1, 0.8, 0.1)).
+		WithPattern(material.NewRingPattern(floatcolor.NewFromInt(0x1f005c), floatcolor.NewFromInt(0xffb56b)).WithTransform(transform.Scaling(0.1, 0.1, 0.1))).
 		WithDiffuse(0.7).
 		WithSpecular(0.3))
 
@@ -74,7 +75,7 @@ func main() {
 	world.AddPrimitives(&floor, &leftWall, &rightWall, &middleSphere, &leftSphere, &rightSphere)
 	world.AddLights(&light)
 
-	camera := camera.New(1920, 1080, math.Pi/3)
+	camera := camera.New(640, 480, math.Pi/3)
 	camera.SetTransform(transform.ViewTransform(
 		tuple.NewPoint(0, 1.5, -5),
 		tuple.NewPoint(0, 1, 0),
