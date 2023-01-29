@@ -1,6 +1,7 @@
 package world
 
 import (
+	"math"
 	"sync"
 	"testing"
 
@@ -49,6 +50,16 @@ func TestPrecomputingIntersectionState(t *testing.T) {
 	assert.Equal(t, tuple.NewVector(0, 0, -1), hc.normalv)
 }
 
+func TestPrecomputingReflectionVector(t *testing.T) {
+	s := primitive.NewPlane()
+	r := ray.New(tuple.NewPoint(0, 1, -1), tuple.NewVector(0, -math.Sqrt2/2, math.Sqrt2/2))
+	i := primitive.NewIntersection(math.Sqrt2, &s)
+
+	hc := prepareHitComputations(i, r)
+
+	assert.Equal(t, tuple.NewVector(0, math.Sqrt2/2, math.Sqrt2/2), hc.reflectv)
+}
+
 func TestPrecomputingOverpoint(t *testing.T) {
 	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 	s := primitive.NewSphere()
@@ -93,7 +104,7 @@ func TestShadingAnIntersection(t *testing.T) {
 	i := primitive.NewIntersection(4, shape)
 
 	hc := prepareHitComputations(i, r)
-	c := w.shadeHit(hc)
+	c := w.shadeHit(hc, 1)
 
 	assert.True(t, floatcolor.New(0.38066, 0.47583, 0.2855).Equals(c))
 }
@@ -107,7 +118,7 @@ func TestShadingAnIntersectionFromTheInside(t *testing.T) {
 	i := primitive.NewIntersection(0.5, shape)
 
 	hc := prepareHitComputations(i, r)
-	c := w.shadeHit(hc)
+	c := w.shadeHit(hc, 1)
 
 	assert.True(t, floatcolor.New(0.90498, 0.90498, 0.90498).Equals(c))
 }
@@ -124,7 +135,7 @@ func TestShadingAnIntersectionInAShadow(t *testing.T) {
 	i := primitive.NewIntersection(4, &s2)
 
 	hc := prepareHitComputations(i, r)
-	c := w.shadeHit(hc)
+	c := w.shadeHit(hc, 1)
 
 	assert.True(t, floatcolor.New(0.1, 0.1, 0.1).Equals(c))
 }
@@ -133,7 +144,7 @@ func TestColorWhenRayMisses(t *testing.T) {
 	w := testWorld()
 	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 1, 0))
 
-	c := w.ColorAt(r)
+	c := w.ColorAt(r, 1)
 
 	assert.Equal(t, floatcolor.Black, c)
 }
@@ -142,7 +153,7 @@ func TestColorWhenRayHits(t *testing.T) {
 	w := testWorld()
 	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 
-	c := w.ColorAt(r)
+	c := w.ColorAt(r, 1)
 
 	assert.True(t, floatcolor.New(0.38066, 0.47583, 0.2855).Equals(c))
 }
@@ -155,7 +166,7 @@ func TestColorWithIntersectionBehindRay(t *testing.T) {
 	innerSphere.SetMaterial(innerSphere.Material().WithAmbient(1))
 	r := ray.New(tuple.NewPoint(0, 0, 0.75), tuple.NewVector(0, 0, -1))
 
-	c := w.ColorAt(r)
+	c := w.ColorAt(r, 1)
 
 	assert.True(t, floatcolor.White.Equals(c))
 }
@@ -188,6 +199,80 @@ func TestNoShadowWhenObjectIsBehindPoint(t *testing.T) {
 	assert.False(t, w.isShadowed(p, w.Lights()[0].Position()))
 }
 
+func TestReflectedColorForNonReflectiveMaterial(t *testing.T) {
+	w := testWorld()
+	r := ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
+	shape := w.primitives[1]
+	shape.SetMaterial(shape.Material().WithAmbient(1))
+	i := primitive.NewIntersection(1, shape)
+
+	hc := prepareHitComputations(i, r)
+
+	assert.Equal(t, floatcolor.Black, w.reflectedColor(hc, 1))
+}
+
+func TestReflectedColorForReflectiveMaterial(t *testing.T) {
+	w := testWorld()
+	r := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt2/2, math.Sqrt2/2))
+	shape := primitive.NewPlane()
+	shape.SetMaterial(material.Default.WithReflective(0.5))
+	shape.SetTransform(transform.Translation(0, -1, 0))
+	w.AddPrimitives(&shape)
+	i := primitive.NewIntersection(math.Sqrt2, &shape)
+
+	hc := prepareHitComputations(i, r)
+
+	assertAlmost(t, floatcolor.New(0.19032, 0.2379, 0.14274), w.reflectedColor(hc, 1))
+}
+
+func TestShadeHitForReflectiveMaterial(t *testing.T) {
+	w := testWorld()
+	r := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt2/2, math.Sqrt2/2))
+	shape := primitive.NewPlane()
+	shape.SetMaterial(material.Default.WithReflective(0.5))
+	shape.SetTransform(transform.Translation(0, -1, 0))
+	w.AddPrimitives(&shape)
+	i := primitive.NewIntersection(math.Sqrt2, &shape)
+
+	hc := prepareHitComputations(i, r)
+	color := w.shadeHit(hc, 1)
+
+	assertAlmost(t, floatcolor.New(0.87677, 0.92436, 0.82918), color)
+}
+
+func TestReflectedColorAtMaximumRecursionDepth(t *testing.T) {
+	w := testWorld()
+	r := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt2/2, math.Sqrt2/2))
+	shape := primitive.NewPlane()
+	shape.SetMaterial(material.Default.WithReflective(0.5))
+	shape.SetTransform(transform.Translation(0, -1, 0))
+	w.AddPrimitives(&shape)
+	i := primitive.NewIntersection(math.Sqrt2, &shape)
+
+	hc := prepareHitComputations(i, r)
+
+	assertAlmost(t, floatcolor.Black, w.reflectedColor(hc, 0))
+}
+
+func TestColorAtWithMutuallyReflectiveSurfaces(t *testing.T) {
+	w := New()
+	l := light.NewPointLight(tuple.NewPoint(0, 0, 0), floatcolor.White)
+	w.AddLights(&l)
+	lower := primitive.NewPlane()
+	lower.SetMaterial(material.Default.WithReflective(1))
+	lower.SetTransform(transform.Translation(0, -1, 0))
+	w.AddPrimitives(&lower)
+
+	upper := primitive.NewPlane()
+	upper.SetMaterial(material.Default.WithReflective(1))
+	upper.SetTransform(transform.Translation(0, 1, 0))
+	w.AddPrimitives(&upper)
+
+	ray := ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 1, 0))
+	w.ColorAt(ray, 1)
+	// Should not overflow stack from infinite recursion
+}
+
 func TestGenerateID(t *testing.T) {
 	w := New()
 	numIDs := 10000
@@ -211,6 +296,14 @@ func TestGenerateID(t *testing.T) {
 		require.NotEqual(t, last, next)
 		last = next
 	}
+}
+
+func assertAlmost(t *testing.T, c1 floatcolor.Float64Color, c2 floatcolor.Float64Color) {
+	r1, g1, b1 := c1.RGB()
+	r2, g2, b2 := c2.RGB()
+	assert.True(t, float.AlmostEqual(r1, r2, 0.001), "R values differ: c1.R=%v, c2.R=%v", r1, r2)
+	assert.True(t, float.AlmostEqual(g1, g2, 0.001), "G values differ: c1.G=%v, c2.G=%v", g1, g2)
+	assert.True(t, float.AlmostEqual(b1, b2, 0.001), "B values differ: c1.B=%v, c2.B=%v", b1, b2)
 }
 
 func testWorld() *World {

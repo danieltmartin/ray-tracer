@@ -54,16 +54,16 @@ func (w *World) Intersect(r ray.Ray) primitive.Intersections {
 	return allIntersections
 }
 
-func (w *World) ColorAt(ray ray.Ray) floatcolor.Float64Color {
+func (w *World) ColorAt(ray ray.Ray, remaining int) floatcolor.Float64Color {
 	hit := w.Intersect(ray).Hit()
 	if hit == nil {
 		return floatcolor.Black
 	}
 	hc := prepareHitComputations(*hit, ray)
-	return w.shadeHit(hc)
+	return w.shadeHit(hc, remaining)
 }
 
-func (w *World) shadeHit(hc hitComputations) floatcolor.Float64Color {
+func (w *World) shadeHit(hc hitComputations, remaining int) floatcolor.Float64Color {
 	color := floatcolor.Black
 	for _, light := range w.lights {
 		if light == nil {
@@ -73,7 +73,8 @@ func (w *World) shadeHit(hc hitComputations) floatcolor.Float64Color {
 		hitColor := hc.object.Material().Lighting(hc.object, *light, hc.overPoint, hc.eyev, hc.normalv, inShadow)
 		color = color.Add(hitColor)
 	}
-	return color
+	reflectColor := w.reflectedColor(hc, remaining)
+	return color.Add(reflectColor)
 }
 
 func (w *World) isShadowed(p tuple.Tuple, lightPosition tuple.Tuple) bool {
@@ -83,6 +84,14 @@ func (w *World) isShadowed(p tuple.Tuple, lightPosition tuple.Tuple) bool {
 	return hit != nil && hit.Distance() < lightDistance
 }
 
+func (w *World) reflectedColor(hc hitComputations, remaining int) floatcolor.Float64Color {
+	if remaining == 0 || hc.object.Material().Reflective() == 0 {
+		return floatcolor.Black
+	}
+	reflectRay := ray.New(hc.overPoint, hc.reflectv)
+	return w.ColorAt(reflectRay, remaining-1).Mul(hc.object.Material().Reflective())
+}
+
 type hitComputations struct {
 	distance  float64
 	object    primitive.Primitive
@@ -90,6 +99,7 @@ type hitComputations struct {
 	overPoint tuple.Tuple // Adjusted in normalv direction slightly for floating point precision sensitive calculations
 	eyev      tuple.Tuple
 	normalv   tuple.Tuple
+	reflectv  tuple.Tuple
 	inside    bool
 }
 
@@ -101,6 +111,7 @@ func prepareHitComputations(intersection primitive.Intersection, ray ray.Ray) hi
 	hc.hitPoint = ray.Position(intersection.Distance())
 	hc.eyev = ray.Direction().Neg()
 	hc.normalv = hc.object.NormalAt(hc.hitPoint)
+	hc.reflectv = ray.Direction().Reflect(hc.normalv)
 
 	if hc.normalv.Dot(hc.eyev) < 0 {
 		hc.inside = true

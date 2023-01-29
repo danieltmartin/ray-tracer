@@ -13,6 +13,8 @@ import (
 	"github.com/danieltmartin/ray-tracer/world"
 )
 
+const recursionDepth = 5
+
 type Camera struct {
 	hsize       uint
 	vsize       uint
@@ -74,7 +76,7 @@ func (c *Camera) Render(w *world.World) image.Image {
 			defer wg.Done()
 			for x := uint(0); x < c.hsize; x++ {
 				r := c.RayForPixel(x, y)
-				color := w.ColorAt(r)
+				color := w.ColorAt(r, recursionDepth)
 				canvas.WritePixel(x, y, color)
 			}
 			<-semaphore // Release

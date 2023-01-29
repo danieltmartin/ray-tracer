@@ -8,15 +8,15 @@ import (
 	"github.com/danieltmartin/ray-tracer/tuple"
 )
 
-var Default = New(SolidPattern(floatcolor.White), 0.1, 0.9, 0.9, 200.0)
+var Default = New(SolidPattern(floatcolor.White), 0.1, 0.9, 0.9, 200.0, 0)
 
 type Material struct {
-	pattern                               Pattern
-	ambient, diffuse, specular, shininess float64
+	pattern                                           Pattern
+	ambient, diffuse, specular, shininess, reflective float64
 }
 
-func New(pattern Pattern, ambient, diffuse, specular, shininess float64) Material {
-	return Material{pattern, ambient, diffuse, specular, shininess}
+func New(pattern Pattern, ambient, diffuse, specular, shininess, reflective float64) Material {
+	return Material{pattern, ambient, diffuse, specular, shininess, reflective}
 }
 
 func (m Material) Ambient() float64 {
@@ -33,6 +33,10 @@ func (m Material) Specular() float64 {
 
 func (m Material) Shininess() float64 {
 	return m.shininess
+}
+
+func (m Material) Reflective() float64 {
+	return m.reflective
 }
 
 func (m Material) Pattern() Pattern {
@@ -69,6 +73,12 @@ func (m Material) WithShininess(s float64) Material {
 	return c
 }
 
+func (m Material) WithReflective(r float64) Material {
+	c := m.copy()
+	c.reflective = r
+	return c
+}
+
 func (m Material) WithPattern(p Pattern) Material {
 	c := m.copy()
 	c.pattern = p
@@ -76,7 +86,7 @@ func (m Material) WithPattern(p Pattern) Material {
 }
 
 func (m Material) copy() Material {
-	return Material{m.pattern, m.ambient, m.diffuse, m.specular, m.shininess}
+	return Material{m.pattern, m.ambient, m.diffuse, m.specular, m.shininess, m.reflective}
 }
 
 func (m Material) Lighting(
