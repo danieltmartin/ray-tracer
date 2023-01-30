@@ -16,21 +16,23 @@ import (
 const recursionDepth = 5
 
 type Camera struct {
-	hsize       uint
-	vsize       uint
-	fieldOfView float64
-	transform   matrix.Matrix
-	pixelSize   float64
-	halfWidth   float64
-	halfHeight  float64
+	hsize            uint
+	vsize            uint
+	fieldOfView      float64
+	transform        matrix.Matrix
+	inverseTransform matrix.Matrix
+	pixelSize        float64
+	halfWidth        float64
+	halfHeight       float64
 }
 
 func New(hsize, vsize uint, fieldOfView float64) *Camera {
 	c := &Camera{
-		hsize:       hsize,
-		vsize:       vsize,
-		fieldOfView: fieldOfView,
-		transform:   matrix.Identity4(),
+		hsize:            hsize,
+		vsize:            vsize,
+		fieldOfView:      fieldOfView,
+		transform:        matrix.Identity4(),
+		inverseTransform: matrix.Identity4(),
 	}
 	computePixelSizeAndDimensions(c)
 	return c
@@ -38,6 +40,7 @@ func New(hsize, vsize uint, fieldOfView float64) *Camera {
 
 func (c *Camera) SetTransform(t matrix.Matrix) {
 	c.transform = t
+	c.inverseTransform = t.Inverse()
 }
 
 func (c *Camera) RayForPixel(px, py uint) ray.Ray {
@@ -54,7 +57,7 @@ func (c *Camera) RayForPixel(px, py uint) ray.Ray {
 	// Transform the pixel to account for camera position.
 	// We use the inverse because the transform matrix transforms the world, not the camera,
 	// so the inverse is the transform of the camera.
-	cameraTransform := c.transform.Inverse()
+	cameraTransform := c.inverseTransform
 	pixel := cameraTransform.MulTuple(untransformedPixel)
 	origin := cameraTransform.MulTuple(tuple.NewPoint(0, 0, 0))
 	direction := pixel.Sub(origin).Norm()

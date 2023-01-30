@@ -62,10 +62,10 @@ func TestRayThroughCornerOfCanvas(t *testing.T) {
 
 func TestRayWhenCameraIsTransformed(t *testing.T) {
 	c := New(201, 101, math.Pi/2)
-	c.transform = transform.Identity().
+	c.SetTransform(transform.Identity().
 		Translation(0, -2, 5).
 		RotationY(math.Pi / 4).
-		Matrix()
+		Matrix())
 
 	r := c.RayForPixel(100, 50)
 
@@ -79,7 +79,7 @@ func TestRenderWorld(t *testing.T) {
 	from := tuple.NewPoint(0, 0, -5)
 	to := tuple.NewPoint(0, 0, 0)
 	up := tuple.NewVector(0, 1, 0)
-	c.transform = transform.ViewTransform(from, to, up)
+	c.SetTransform(transform.ViewTransform(from, to, up))
 
 	image := c.Render(w)
 
