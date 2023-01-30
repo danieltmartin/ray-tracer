@@ -12,6 +12,15 @@ import (
 	"github.com/danieltmartin/ray-tracer/tuple"
 )
 
+var intersectionPool sync.Pool
+
+func init() {
+	intersectionPool.New = func() any {
+		xns := primitive.Intersections(make(primitive.Intersections, 0))
+		return &xns
+	}
+}
+
 type ID uint64
 
 type World struct {
@@ -41,8 +50,8 @@ func (w *World) Lights() []*light.PointLight {
 	return w.lights
 }
 
-func (w *World) Intersect(r ray.Ray) primitive.Intersections {
-	var allIntersections primitive.Intersections
+func (w *World) intersect(r ray.Ray) primitive.Intersections {
+	allIntersections := *intersectionPool.Get().(*primitive.Intersections)
 	for _, p := range w.primitives {
 		allIntersections = append(allIntersections, p.Intersects(r)...)
 	}
@@ -55,11 +64,14 @@ func (w *World) Intersect(r ray.Ray) primitive.Intersections {
 }
 
 func (w *World) ColorAt(ray ray.Ray, remaining int) floatcolor.Float64Color {
-	hit := w.Intersect(ray).Hit()
+	xns := w.intersect(ray)
+	hit := xns.Hit()
 	if hit == nil {
 		return floatcolor.Black
 	}
 	hc := prepareHitComputations(*hit, ray)
+	reslice := xns[:0]
+	intersectionPool.Put(&reslice)
 	return w.shadeHit(hc, remaining)
 }
 
@@ -80,7 +92,10 @@ func (w *World) shadeHit(hc hitComputations, remaining int) floatcolor.Float64Co
 func (w *World) isShadowed(p tuple.Tuple, lightPosition tuple.Tuple) bool {
 	pointToLight := lightPosition.Sub(p)
 	lightDistance := pointToLight.Mag()
-	hit := w.Intersect(ray.New(p, pointToLight.Norm())).Hit()
+	xns := w.intersect(ray.New(p, pointToLight.Norm()))
+	hit := xns.Hit()
+	reslice := xns[:0]
+	intersectionPool.Put(&reslice)
 	return hit != nil && hit.Distance() < lightDistance
 }
 

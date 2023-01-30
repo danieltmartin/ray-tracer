@@ -28,7 +28,7 @@ func TestRayIntersectWorld(t *testing.T) {
 	w := testWorld()
 	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
 
-	xs := w.Intersect(r)
+	xs := w.intersect(r)
 
 	assert.Len(t, xs, 4)
 	assert.Equal(t, 4.0, xs[0].Distance())
