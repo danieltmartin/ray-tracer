@@ -18,14 +18,17 @@ type Primitive interface {
 }
 
 type data struct {
-	material  material.Material
-	transform matrix.Matrix
+	material         material.Material
+	transform        matrix.Matrix
+	inverseTransform matrix.Matrix
 }
 
 func newData() data {
+	ident := matrix.Identity4()
 	return data{
 		material.Default,
-		matrix.Identity4(),
+		ident,
+		ident,
 	}
 }
 
@@ -39,6 +42,7 @@ func (d *data) Transform() matrix.Matrix {
 
 func (d *data) SetTransform(m matrix.Matrix) {
 	d.transform = m
+	d.inverseTransform = m.Inverse()
 }
 
 func (d *data) SetMaterial(m material.Material) {
@@ -46,16 +50,16 @@ func (d *data) SetMaterial(m material.Material) {
 }
 
 func (d *data) worldPointToLocal(world tuple.Tuple) tuple.Tuple {
-	return d.transform.Inverse().MulTuple(world)
+	return d.inverseTransform.MulTuple(world)
 }
 
 func (d *data) localNormalToWorld(localNormal tuple.Tuple) tuple.Tuple {
-	worldNormal := d.transform.Inverse().Transpose().MulTuple(localNormal)
+	worldNormal := d.inverseTransform.Transpose().MulTuple(localNormal)
 	return tuple.New(worldNormal.X, worldNormal.Y, worldNormal.Z, 0).Norm()
 }
 
 func (d *data) worldRayToLocal(r ray.Ray) ray.Ray {
-	return r.Transform(d.transform.Inverse())
+	return r.Transform(d.inverseTransform)
 }
 
 type localIntersecter interface {
