@@ -10,6 +10,7 @@ import (
 type Primitive interface {
 	Material() material.Material
 	Transform() matrix.Matrix
+	InverseTransform() matrix.Matrix
 	SetMaterial(m material.Material)
 	SetTransform(t matrix.Matrix)
 
@@ -38,6 +39,10 @@ func (d *data) Material() material.Material {
 
 func (d *data) Transform() matrix.Matrix {
 	return d.transform
+}
+
+func (d *data) InverseTransform() matrix.Matrix {
+	return d.inverseTransform
 }
 
 func (d *data) SetTransform(m matrix.Matrix) {

@@ -10,12 +10,12 @@ import (
 
 type Pattern interface {
 	colorAtObject(object Object, point tuple.Tuple) floatcolor.Float64Color
-	transform() matrix.Matrix
+	inverseTransform() matrix.Matrix
 }
 
 type patternTransform matrix.Matrix
 
-func (p patternTransform) transform() matrix.Matrix {
+func (p patternTransform) inverseTransform() matrix.Matrix {
 	return matrix.Matrix(p)
 }
 
@@ -25,7 +25,7 @@ func (s SolidPattern) colorAtObject(object Object, point tuple.Tuple) floatcolor
 	return floatcolor.Float64Color(s)
 }
 
-func (s SolidPattern) transform() matrix.Matrix {
+func (s SolidPattern) inverseTransform() matrix.Matrix {
 	return matrix.Identity4()
 }
 
@@ -39,7 +39,7 @@ func NewStripePattern(color1, color2 floatcolor.Float64Color) StripePattern {
 }
 
 func (s StripePattern) WithTransform(transform matrix.Matrix) StripePattern {
-	return StripePattern{s.color1, s.color2, patternTransform(transform)}
+	return StripePattern{s.color1, s.color2, patternTransform(transform.Inverse())}
 }
 
 func (p StripePattern) colorAt(point tuple.Tuple) floatcolor.Float64Color {
@@ -63,7 +63,7 @@ func NewGradientPattern(fromColor, toColor floatcolor.Float64Color) GradientPatt
 }
 
 func (g GradientPattern) WithTransform(transform matrix.Matrix) GradientPattern {
-	return GradientPattern{g.fromColor, g.toColor, patternTransform(transform)}
+	return GradientPattern{g.fromColor, g.toColor, patternTransform(transform.Inverse())}
 }
 
 func (s GradientPattern) colorAt(point tuple.Tuple) floatcolor.Float64Color {
@@ -92,7 +92,7 @@ func NewRingPattern(fromColor, toColor floatcolor.Float64Color) RingPattern {
 }
 
 func (r RingPattern) WithTransform(transform matrix.Matrix) RingPattern {
-	return RingPattern{r.fromColor, r.toColor, patternTransform(transform)}
+	return RingPattern{r.fromColor, r.toColor, patternTransform(transform.Inverse())}
 }
 
 func (r RingPattern) colorAt(point tuple.Tuple) floatcolor.Float64Color {
@@ -117,7 +117,7 @@ func NewCheckerPattern(color1, color2 floatcolor.Float64Color) CheckerPattern {
 }
 
 func (r CheckerPattern) WithTransform(transform matrix.Matrix) CheckerPattern {
-	return CheckerPattern{r.color1, r.color2, patternTransform(transform)}
+	return CheckerPattern{r.color1, r.color2, patternTransform(transform.Inverse())}
 }
 
 func (r CheckerPattern) colorAt(point tuple.Tuple) floatcolor.Float64Color {
@@ -134,10 +134,10 @@ func (r CheckerPattern) colorAtObject(object Object, worldPoint tuple.Tuple) flo
 }
 
 type Object interface {
-	Transform() matrix.Matrix
+	InverseTransform() matrix.Matrix
 }
 
 func toPatternPoint(pattern Pattern, object Object, worldPoint tuple.Tuple) tuple.Tuple {
-	objectPoint := object.Transform().Inverse().MulTuple(worldPoint)
-	return pattern.transform().Inverse().MulTuple(objectPoint)
+	objectPoint := object.InverseTransform().MulTuple(worldPoint)
+	return pattern.inverseTransform().MulTuple(objectPoint)
 }

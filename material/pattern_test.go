@@ -47,7 +47,7 @@ func TestStripePatternAlternatesInX(t *testing.T) {
 }
 
 func TestStripePatternWithObjectTransformation(t *testing.T) {
-	o := dummyObject(transform.Scaling(2, 2, 2))
+	o := dummyObject(transform.Scaling(2, 2, 2).Inverse())
 	p := NewStripePattern(floatcolor.White, floatcolor.Black)
 
 	c := p.colorAtObject(&o, tuple.NewPoint(1.5, 0, 0))
@@ -66,7 +66,7 @@ func TestStripePatternWithPatternTransformation(t *testing.T) {
 }
 
 func TestStripePatternWithObjectAndPatternTransformation(t *testing.T) {
-	o := dummyObject(transform.Scaling(2, 2, 2))
+	o := dummyObject(transform.Scaling(2, 2, 2).Inverse())
 	p := NewStripePattern(floatcolor.White, floatcolor.Black).
 		WithTransform(transform.Translation(0.5, 0, 0))
 
@@ -132,6 +132,6 @@ func assertColorsEqual(t *testing.T, expected, actual floatcolor.Float64Color) {
 
 type dummyObject matrix.Matrix
 
-func (d dummyObject) Transform() matrix.Matrix {
+func (d dummyObject) InverseTransform() matrix.Matrix {
 	return matrix.Matrix(d)
 }
