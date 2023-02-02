@@ -133,6 +133,18 @@ func (r CheckerPattern) colorAtObject(object Object, worldPoint tuple.Tuple) flo
 	return r.colorAt(patternPoint)
 }
 
+// TestPattern returns colors with the RGB values set to the XYZ of the point of intersection.
+// This is useful for tests to determine if a ray was refracted.
+type TestPattern struct{}
+
+func (TestPattern) colorAtObject(object Object, point tuple.Tuple) floatcolor.Float64Color {
+	return floatcolor.New(point.X, point.Y, point.Z)
+}
+
+func (TestPattern) inverseTransform() matrix.Matrix {
+	return matrix.Identity4()
+}
+
 type Object interface {
 	InverseTransform() matrix.Matrix
 }

@@ -72,6 +72,59 @@ func TestPrecomputingOverpoint(t *testing.T) {
 	assert.Greater(t, hc.hitPoint.Z, hc.overPoint.Z)
 }
 
+func TestPrecomputingUnderPoint(t *testing.T) {
+	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	s := glassSphere()
+	s.SetTransform(transform.Translation(0, 0, 1))
+	i := primitive.NewIntersection(5, s)
+	xs := primitive.NewIntersections(i)
+
+	hc := prepareHitComputations(i, r, xs...)
+
+	assert.Greater(t, hc.underPoint.Z, float.Epsilon/2)
+	assert.Less(t, hc.hitPoint.Z, hc.underPoint.Z)
+}
+
+func TestPrecomputingEnterAndExitPoint(t *testing.T) {
+	a := glassSphere()
+	a.SetTransform(transform.Scaling(2, 2, 2))
+	a.SetMaterial(a.Material().WithRefractiveIndex(1.5))
+
+	b := glassSphere()
+	b.SetTransform(transform.Translation(0, 0, -0.25))
+	b.SetMaterial(b.Material().WithRefractiveIndex(2.0))
+
+	c := glassSphere()
+	c.SetTransform(transform.Translation(0, 0, 0.25))
+	c.SetMaterial(c.Material().WithRefractiveIndex(2.5))
+
+	r := ray.New(tuple.NewPoint(0, 0, -4), tuple.NewVector(0, 0, 1))
+
+	xs := primitive.NewIntersections(
+		primitive.NewIntersection(2, a),
+		primitive.NewIntersection(2.75, b),
+		primitive.NewIntersection(3.25, c),
+		primitive.NewIntersection(4.75, b),
+		primitive.NewIntersection(5.25, c),
+		primitive.NewIntersection(6, a),
+	)
+
+	expected := [][]float64{
+		{1.0, 1.5},
+		{1.5, 2.0},
+		{2.0, 2.5},
+		{2.5, 2.5},
+		{2.5, 1.5},
+		{1.5, 1.0},
+	}
+
+	for i, x := range xs {
+		hc := prepareHitComputations(x, r, xs...)
+		assert.Equal(t, expected[i][0], hc.n1)
+		assert.Equal(t, expected[i][1], hc.n2)
+	}
+}
+
 func TestHitOutside(t *testing.T) {
 	w := testWorld()
 	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
@@ -138,6 +191,34 @@ func TestShadingAnIntersectionInAShadow(t *testing.T) {
 	c := w.shadeHit(hc, 1)
 
 	assert.True(t, floatcolor.New(0.1, 0.1, 0.1).Equals(c))
+}
+
+func TestShadingWithTransparentMaterial(t *testing.T) {
+	w := testWorld()
+
+	floor := primitive.NewPlane()
+	floor.SetTransform(transform.Translation(0, -1, 0))
+	floor.SetMaterial(floor.Material().
+		WithTransparency(0.5).
+		WithRefractiveIndex(1.5),
+	)
+	w.AddPrimitives(&floor)
+
+	ball := primitive.NewSphere()
+	ball.SetTransform(transform.Translation(0, -3.5, -0.5))
+	ball.SetMaterial(ball.Material().
+		WithColor(floatcolor.Red).
+		WithAmbient(0.5),
+	)
+	w.AddPrimitives(&ball)
+
+	r := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt2/2, math.Sqrt2/2))
+	x := primitive.NewIntersection(math.Sqrt2, &floor)
+
+	hc := prepareHitComputations(x, r, x)
+	color := w.shadeHit(hc, 5)
+
+	assertAlmost(t, floatcolor.New(0.93642, 0.68642, 0.68642), color)
 }
 
 func TestColorWhenRayMisses(t *testing.T) {
@@ -273,6 +354,85 @@ func TestColorAtWithMutuallyReflectiveSurfaces(t *testing.T) {
 	// Should not overflow stack from infinite recursion
 }
 
+func TestRefractedColorWithOpaqueSurface(t *testing.T) {
+	w := testWorld()
+	shape := w.primitives[0]
+	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	xs := primitive.NewIntersections(
+		primitive.NewIntersection(4, shape),
+		primitive.NewIntersection(6, shape),
+	)
+
+	hc := prepareHitComputations(xs[0], r, xs...)
+	c := w.refractedColor(hc, 5)
+
+	assert.Equal(t, floatcolor.Black, c)
+}
+
+func TestRefractedColorAtMaximumRecursionDepth(t *testing.T) {
+	w := testWorld()
+	shape := w.primitives[0]
+	shape.SetMaterial(shape.Material().
+		WithTransparency(1.0).
+		WithRefractiveIndex(1.5),
+	)
+	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	xs := primitive.NewIntersections(
+		primitive.NewIntersection(4, shape),
+		primitive.NewIntersection(6, shape),
+	)
+
+	hc := prepareHitComputations(xs[0], r, xs...)
+	c := w.refractedColor(hc, 0)
+
+	assert.Equal(t, floatcolor.Black, c)
+}
+
+func TestRefractedColorUnderTotalInternalReflection(t *testing.T) {
+	w := testWorld()
+	shape := w.primitives[0]
+	shape.SetMaterial(shape.Material().
+		WithTransparency(1.0).
+		WithRefractiveIndex(1.5),
+	)
+	r := ray.New(tuple.NewPoint(0, 0, math.Sqrt2/2), tuple.NewVector(0, 1, 0))
+	xs := primitive.NewIntersections(
+		primitive.NewIntersection(-math.Sqrt2/2, shape),
+		primitive.NewIntersection(math.Sqrt2/2, shape),
+	)
+
+	hc := prepareHitComputations(xs[1], r, xs...)
+	c := w.refractedColor(hc, 5)
+
+	assert.Equal(t, floatcolor.Black, c)
+}
+
+func TestRefractedColorWithRefractedRay(t *testing.T) {
+	w := testWorld()
+	a := w.primitives[0]
+	a.SetMaterial(a.Material().
+		WithAmbient(1.0).
+		WithPattern(material.TestPattern{}),
+	)
+	b := w.primitives[1]
+	b.SetMaterial(b.Material().
+		WithTransparency(1.0).
+		WithRefractiveIndex(1.5),
+	)
+	r := ray.New(tuple.NewPoint(0, 0, 0.1), tuple.NewVector(0, 1, 0))
+	xs := primitive.NewIntersections(
+		primitive.NewIntersection(-0.9899, a),
+		primitive.NewIntersection(-0.4899, b),
+		primitive.NewIntersection(0.4899, b),
+		primitive.NewIntersection(0.9899, a),
+	)
+
+	hc := prepareHitComputations(xs[2], r, xs...)
+	c := w.refractedColor(hc, 5)
+
+	assertAlmost(t, floatcolor.New(0, 0.99888, 0.04725), c)
+}
+
 func TestGenerateID(t *testing.T) {
 	w := New()
 	numIDs := 10000
@@ -324,4 +484,13 @@ func testWorld() *World {
 	w.AddPrimitives(&s1, &s2)
 
 	return w
+}
+
+func glassSphere() primitive.Primitive {
+	s := primitive.NewSphere()
+	s.SetMaterial(material.Default.
+		WithTransparency(1).
+		WithRefractiveIndex(1.5),
+	)
+	return &s
 }

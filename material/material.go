@@ -8,15 +8,33 @@ import (
 	"github.com/danieltmartin/ray-tracer/tuple"
 )
 
-var Default = New(SolidPattern(floatcolor.White), 0.1, 0.9, 0.9, 200.0, 0)
+var Default = New(SolidPattern(floatcolor.White), 0.1, 0.9, 0.9, 200.0, 0, 0, 1)
 
 type Material struct {
-	pattern                                           Pattern
-	ambient, diffuse, specular, shininess, reflective float64
+	pattern Pattern
+	ambient, diffuse, specular, shininess,
+	reflective, transparency, refractiveIndex float64
 }
 
-func New(pattern Pattern, ambient, diffuse, specular, shininess, reflective float64) Material {
-	return Material{pattern, ambient, diffuse, specular, shininess, reflective}
+func New(
+	pattern Pattern,
+	ambient,
+	diffuse,
+	specular,
+	shininess,
+	reflective,
+	transparency,
+	refractiveIndex float64) Material {
+	return Material{
+		pattern,
+		ambient,
+		diffuse,
+		specular,
+		shininess,
+		reflective,
+		transparency,
+		refractiveIndex,
+	}
 }
 
 func (m Material) Ambient() float64 {
@@ -37,6 +55,14 @@ func (m Material) Shininess() float64 {
 
 func (m Material) Reflective() float64 {
 	return m.reflective
+}
+
+func (m Material) Transparency() float64 {
+	return m.transparency
+}
+
+func (m Material) RefractiveIndex() float64 {
+	return m.refractiveIndex
 }
 
 func (m Material) Pattern() Pattern {
@@ -79,6 +105,18 @@ func (m Material) WithReflective(r float64) Material {
 	return c
 }
 
+func (m Material) WithTransparency(t float64) Material {
+	c := m.copy()
+	c.transparency = t
+	return c
+}
+
+func (m Material) WithRefractiveIndex(r float64) Material {
+	c := m.copy()
+	c.refractiveIndex = r
+	return c
+}
+
 func (m Material) WithPattern(p Pattern) Material {
 	c := m.copy()
 	c.pattern = p
@@ -86,7 +124,16 @@ func (m Material) WithPattern(p Pattern) Material {
 }
 
 func (m Material) copy() Material {
-	return Material{m.pattern, m.ambient, m.diffuse, m.specular, m.shininess, m.reflective}
+	return Material{
+		m.pattern,
+		m.ambient,
+		m.diffuse,
+		m.specular,
+		m.shininess,
+		m.reflective,
+		m.transparency,
+		m.refractiveIndex,
+	}
 }
 
 func (m Material) Lighting(

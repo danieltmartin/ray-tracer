@@ -22,6 +22,8 @@ func TestDefaultMaterial(t *testing.T) {
 	assert.Equal(t, 0.9, m.Specular())
 	assert.Equal(t, 200.0, m.Shininess())
 	assert.Equal(t, 0.0, m.reflective)
+	assert.Equal(t, 0.0, m.transparency)
+	assert.Equal(t, 1.0, m.refractiveIndex)
 }
 
 func TestLightingEyeBetweenLightAndSurface(t *testing.T) {

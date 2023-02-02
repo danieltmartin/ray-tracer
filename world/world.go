@@ -1,6 +1,7 @@
 package world
 
 import (
+	"math"
 	"sort"
 	"sync"
 
@@ -69,7 +70,7 @@ func (w *World) ColorAt(ray ray.Ray, remaining int) floatcolor.Float64Color {
 	if hit == nil {
 		return floatcolor.Black
 	}
-	hc := prepareHitComputations(*hit, ray)
+	hc := prepareHitComputations(*hit, ray, xns...)
 	reslice := xns[:0]
 	intersectionPool.Put(&reslice)
 	return w.shadeHit(hc, remaining)
@@ -86,7 +87,8 @@ func (w *World) shadeHit(hc hitComputations, remaining int) floatcolor.Float64Co
 		color = color.Add(hitColor)
 	}
 	reflectColor := w.reflectedColor(hc, remaining)
-	return color.Add(reflectColor)
+	refractColor := w.refractedColor(hc, remaining)
+	return color.Add(reflectColor).Add(refractColor)
 }
 
 func (w *World) isShadowed(p tuple.Tuple, lightPosition tuple.Tuple) bool {
@@ -107,23 +109,52 @@ func (w *World) reflectedColor(hc hitComputations, remaining int) floatcolor.Flo
 	return w.ColorAt(reflectRay, remaining-1).Mul(hc.object.Material().Reflective())
 }
 
-type hitComputations struct {
-	distance  float64
-	object    primitive.Primitive
-	hitPoint  tuple.Tuple
-	overPoint tuple.Tuple // Adjusted in normalv direction slightly for floating point precision sensitive calculations
-	eyev      tuple.Tuple
-	normalv   tuple.Tuple
-	reflectv  tuple.Tuple
-	inside    bool
+func (w *World) refractedColor(hc hitComputations, remaining int) floatcolor.Float64Color {
+	if remaining == 0 {
+		return floatcolor.Black
+	}
+	if hc.object.Material().Transparency() == 0 {
+		return floatcolor.Black
+	}
+
+	// Total internal reflection check
+	nRatio := hc.n1 / hc.n2
+	cosi := hc.eyev.Dot(hc.normalv)
+	sin2t := nRatio * nRatio * (1 - cosi*cosi)
+	if sin2t > 1 {
+		return floatcolor.Black
+	}
+
+	cost := math.Sqrt(1.0 - sin2t)
+	direction := hc.normalv.Mul(nRatio*cosi - cost).Sub(hc.eyev.Mul(nRatio))
+	refractRay := ray.New(hc.underPoint, direction)
+
+	return w.ColorAt(refractRay, remaining-1).Mul(hc.object.Material().Transparency())
 }
 
-func prepareHitComputations(intersection primitive.Intersection, ray ray.Ray) hitComputations {
+type hitComputations struct {
+	distance   float64
+	object     primitive.Primitive
+	hitPoint   tuple.Tuple
+	overPoint  tuple.Tuple // Adjusted in normalv direction slightly for floating point precision sensitive calculations
+	underPoint tuple.Tuple
+	eyev       tuple.Tuple
+	normalv    tuple.Tuple
+	reflectv   tuple.Tuple
+	inside     bool
+	n1         float64
+	n2         float64
+}
+
+func prepareHitComputations(
+	hit primitive.Intersection,
+	ray ray.Ray,
+	allIntersections ...primitive.Intersection) hitComputations {
 	var hc hitComputations
 
-	hc.distance = intersection.Distance()
-	hc.object = intersection.Object()
-	hc.hitPoint = ray.Position(intersection.Distance())
+	hc.distance = hit.Distance()
+	hc.object = hit.Object()
+	hc.hitPoint = ray.Position(hit.Distance())
 	hc.eyev = ray.Direction().Neg()
 	hc.normalv = hc.object.NormalAt(hc.hitPoint)
 	hc.reflectv = ray.Direction().Reflect(hc.normalv)
@@ -134,8 +165,45 @@ func prepareHitComputations(intersection primitive.Intersection, ray ray.Ray) hi
 	}
 
 	hc.overPoint = hc.hitPoint.Add(hc.normalv.Mul(float.Epsilon))
+	hc.underPoint = hc.hitPoint.Sub(hc.normalv.Mul(float.Epsilon))
+
+	var containers []primitive.Primitive
+	for _, x := range allIntersections {
+		if x == hit {
+			if len(containers) == 0 {
+				hc.n1 = 1.0
+			} else {
+				hc.n1 = containers[len(containers)-1].Material().RefractiveIndex()
+			}
+		}
+
+		xRemoved := remove(containers, x.Object())
+		if xRemoved != nil {
+			containers = xRemoved
+		} else {
+			containers = append(containers, x.Object())
+		}
+
+		if x == hit {
+			if len(containers) == 0 {
+				hc.n2 = 1.0
+			} else {
+				hc.n2 = containers[len(containers)-1].Material().RefractiveIndex()
+			}
+			break
+		}
+	}
 
 	return hc
+}
+
+func remove(containers []primitive.Primitive, o primitive.Primitive) []primitive.Primitive {
+	for i := range containers {
+		if containers[i] == o {
+			return append(containers[:i], containers[i+1:]...)
+		}
+	}
+	return nil
 }
 
 func (w *World) NextID() ID {
