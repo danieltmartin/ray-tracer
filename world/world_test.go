@@ -221,6 +221,35 @@ func TestShadingWithTransparentMaterial(t *testing.T) {
 	assertAlmost(t, floatcolor.New(0.93642, 0.68642, 0.68642), color)
 }
 
+func TestShadingWithReflectiveAndTransparentMaterial(t *testing.T) {
+	w := testWorld()
+
+	floor := primitive.NewPlane()
+	floor.SetTransform(transform.Translation(0, -1, 0))
+	floor.SetMaterial(floor.Material().
+		WithTransparency(0.5).
+		WithReflective(0.5).
+		WithRefractiveIndex(1.5),
+	)
+	w.AddPrimitives(&floor)
+
+	ball := primitive.NewSphere()
+	ball.SetTransform(transform.Translation(0, -3.5, -0.5))
+	ball.SetMaterial(ball.Material().
+		WithColor(floatcolor.Red).
+		WithAmbient(0.5),
+	)
+	w.AddPrimitives(&ball)
+
+	r := ray.New(tuple.NewPoint(0, 0, -3), tuple.NewVector(0, -math.Sqrt2/2, math.Sqrt2/2))
+	x := primitive.NewIntersection(math.Sqrt2, &floor)
+
+	hc := prepareHitComputations(x, r, x)
+	color := w.shadeHit(hc, 5)
+
+	assertAlmost(t, floatcolor.New(0.93391, 0.69643, 0.69243), color)
+}
+
 func TestColorWhenRayMisses(t *testing.T) {
 	w := testWorld()
 	r := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 1, 0))
@@ -433,6 +462,42 @@ func TestRefractedColorWithRefractedRay(t *testing.T) {
 	assertAlmost(t, floatcolor.New(0, 0.99888, 0.04725), c)
 }
 
+func TestSchlickApproximationUnderTotalInternalReflection(t *testing.T) {
+	s := glassSphere()
+	r := ray.New(tuple.NewPoint(0, 0, math.Sqrt2/2), tuple.NewVector(0, 1, 0))
+	xs := primitive.NewIntersections(primitive.NewIntersection(-math.Sqrt2/2, s), primitive.NewIntersection(math.Sqrt2/2, s))
+
+	hc := prepareHitComputations(xs[1], r, xs...)
+
+	reflectance := schlick(hc)
+
+	assert.Equal(t, 1.0, reflectance)
+}
+
+func TestSchlickApproximationWithPerpendicularViewingAngle(t *testing.T) {
+	s := glassSphere()
+	r := ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 1, 0))
+	xs := primitive.NewIntersections(primitive.NewIntersection(-1, s), primitive.NewIntersection(1, s))
+
+	hc := prepareHitComputations(xs[1], r, xs...)
+
+	reflectance := schlick(hc)
+
+	assertAlmost(t, 0.04, reflectance)
+}
+
+func TestSchlickApproximationWithSmallAngle(t *testing.T) {
+	s := glassSphere()
+	r := ray.New(tuple.NewPoint(0, 0.99, -2), tuple.NewVector(0, 0, 1))
+	xs := primitive.NewIntersections(primitive.NewIntersection(1.8589, s))
+
+	hc := prepareHitComputations(xs[0], r, xs...)
+
+	reflectance := schlick(hc)
+
+	assertAlmost(t, 0.48873, reflectance)
+}
+
 func TestGenerateID(t *testing.T) {
 	w := New()
 	numIDs := 10000
@@ -458,12 +523,19 @@ func TestGenerateID(t *testing.T) {
 	}
 }
 
-func assertAlmost(t *testing.T, c1 floatcolor.Float64Color, c2 floatcolor.Float64Color) {
-	r1, g1, b1 := c1.RGB()
-	r2, g2, b2 := c2.RGB()
-	assert.True(t, float.AlmostEqual(r1, r2, 0.001), "R values differ: c1.R=%v, c2.R=%v", r1, r2)
-	assert.True(t, float.AlmostEqual(g1, g2, 0.001), "G values differ: c1.G=%v, c2.G=%v", g1, g2)
-	assert.True(t, float.AlmostEqual(b1, b2, 0.001), "B values differ: c1.B=%v, c2.B=%v", b1, b2)
+func assertAlmost(t *testing.T, c1 any, c2 any) {
+	switch c1.(type) {
+	case floatcolor.Float64Color:
+		r1, g1, b1 := c1.(floatcolor.Float64Color).RGB()
+		r2, g2, b2 := c2.(floatcolor.Float64Color).RGB()
+		assert.True(t, float.AlmostEqual(r1, r2, 0.001), "R values differ: c1.R=%v, c2.R=%v", r1, r2)
+		assert.True(t, float.AlmostEqual(g1, g2, 0.001), "G values differ: c1.G=%v, c2.G=%v", g1, g2)
+		assert.True(t, float.AlmostEqual(b1, b2, 0.001), "B values differ: c1.B=%v, c2.B=%v", b1, b2)
+	case float64:
+		assert.True(t, float.AlmostEqual(c1.(float64), c2.(float64), 0.001), "values differ: c1=%v, c2=%v", c1, c2)
+	default:
+		panic("unhandled type")
+	}
 }
 
 func testWorld() *World {

@@ -71,7 +71,7 @@ func (c Float64Color) Equals(c2 Float64Color) bool {
 		float.Equal(c.b, c2.b)
 }
 
-func (c Float64Color) AlmostEquals(c2 Float64Color, epsilon float64) bool {
+func (c Float64Color) AlmostEqual(c2 Float64Color, epsilon float64) bool {
 	return float.AlmostEqual(c.r, c2.r, epsilon) &&
 		float.AlmostEqual(c.g, c2.g, epsilon) &&
 		float.AlmostEqual(c.b, c2.b, epsilon)

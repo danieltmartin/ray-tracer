@@ -127,7 +127,7 @@ func TestCheckerPatternShouldRepeatInZ(t *testing.T) {
 }
 
 func assertColorsEqual(t *testing.T, expected, actual floatcolor.Float64Color) {
-	assert.Truef(t, expected.AlmostEquals(actual, 0.1), "expected %v to equal %v", expected, actual)
+	assert.Truef(t, expected.AlmostEqual(actual, 0.1), "expected %v to equal %v", expected, actual)
 }
 
 type dummyObject matrix.Matrix

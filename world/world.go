@@ -77,18 +77,22 @@ func (w *World) ColorAt(ray ray.Ray, remaining int) floatcolor.Float64Color {
 }
 
 func (w *World) shadeHit(hc hitComputations, remaining int) floatcolor.Float64Color {
-	color := floatcolor.Black
+	surfaceColor := floatcolor.Black
 	for _, light := range w.lights {
 		if light == nil {
 			continue
 		}
 		inShadow := w.isShadowed(hc.overPoint, light.Position())
 		hitColor := hc.object.Material().Lighting(hc.object, *light, hc.overPoint, hc.eyev, hc.normalv, inShadow)
-		color = color.Add(hitColor)
+		surfaceColor = surfaceColor.Add(hitColor)
 	}
 	reflectColor := w.reflectedColor(hc, remaining)
 	refractColor := w.refractedColor(hc, remaining)
-	return color.Add(reflectColor).Add(refractColor)
+	if hc.object.Material().Reflective() > 0 && hc.object.Material().Transparency() > 0 {
+		reflectance := schlick(hc)
+		return surfaceColor.Add(reflectColor.Mul(reflectance)).Add(refractColor.Mul(1 - reflectance))
+	}
+	return surfaceColor.Add(reflectColor).Add(refractColor)
 }
 
 func (w *World) isShadowed(p tuple.Tuple, lightPosition tuple.Tuple) bool {
@@ -195,6 +199,26 @@ func prepareHitComputations(
 	}
 
 	return hc
+}
+
+// schlick computes Schlick's approximation of the Fresnel effect.
+func schlick(hc hitComputations) float64 {
+	cos := hc.eyev.Dot(hc.normalv)
+
+	if hc.n1 > hc.n2 {
+		nRatio := hc.n1 / hc.n2
+		sin2t := nRatio * nRatio * (1 - cos*cos)
+		if sin2t > 1 { // Total Internal Reflection
+			return 1
+		}
+
+		cos = math.Sqrt(1 - sin2t)
+	}
+
+	r0 := (hc.n1 - hc.n2) / (hc.n1 + hc.n2)
+	r0 *= r0
+	x := 1 - cos
+	return r0 + (1-r0)*x*x*x*x*x
 }
 
 func remove(containers []primitive.Primitive, o primitive.Primitive) []primitive.Primitive {
