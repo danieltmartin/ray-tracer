@@ -11,6 +11,7 @@ import (
 	"github.com/danieltmartin/ray-tracer/material"
 	"github.com/danieltmartin/ray-tracer/primitive"
 	"github.com/danieltmartin/ray-tracer/ray"
+	"github.com/danieltmartin/ray-tracer/test"
 	"github.com/danieltmartin/ray-tracer/transform"
 	"github.com/danieltmartin/ray-tracer/tuple"
 	"github.com/stretchr/testify/assert"
@@ -218,7 +219,7 @@ func TestShadingWithTransparentMaterial(t *testing.T) {
 	hc := prepareHitComputations(x, r, x)
 	color := w.shadeHit(hc, 5)
 
-	assertAlmost(t, floatcolor.New(0.93642, 0.68642, 0.68642), color)
+	test.AssertAlmost(t, floatcolor.New(0.93642, 0.68642, 0.68642), color)
 }
 
 func TestShadingWithReflectiveAndTransparentMaterial(t *testing.T) {
@@ -247,7 +248,7 @@ func TestShadingWithReflectiveAndTransparentMaterial(t *testing.T) {
 	hc := prepareHitComputations(x, r, x)
 	color := w.shadeHit(hc, 5)
 
-	assertAlmost(t, floatcolor.New(0.93391, 0.69643, 0.69243), color)
+	test.AssertAlmost(t, floatcolor.New(0.93391, 0.69643, 0.69243), color)
 }
 
 func TestColorWhenRayMisses(t *testing.T) {
@@ -332,7 +333,7 @@ func TestReflectedColorForReflectiveMaterial(t *testing.T) {
 
 	hc := prepareHitComputations(i, r)
 
-	assertAlmost(t, floatcolor.New(0.19032, 0.2379, 0.14274), w.reflectedColor(hc, 1))
+	test.AssertAlmost(t, floatcolor.New(0.19032, 0.2379, 0.14274), w.reflectedColor(hc, 1))
 }
 
 func TestShadeHitForReflectiveMaterial(t *testing.T) {
@@ -347,7 +348,7 @@ func TestShadeHitForReflectiveMaterial(t *testing.T) {
 	hc := prepareHitComputations(i, r)
 	color := w.shadeHit(hc, 1)
 
-	assertAlmost(t, floatcolor.New(0.87677, 0.92436, 0.82918), color)
+	test.AssertAlmost(t, floatcolor.New(0.87677, 0.92436, 0.82918), color)
 }
 
 func TestReflectedColorAtMaximumRecursionDepth(t *testing.T) {
@@ -361,7 +362,7 @@ func TestReflectedColorAtMaximumRecursionDepth(t *testing.T) {
 
 	hc := prepareHitComputations(i, r)
 
-	assertAlmost(t, floatcolor.Black, w.reflectedColor(hc, 0))
+	test.AssertAlmost(t, floatcolor.Black, w.reflectedColor(hc, 0))
 }
 
 func TestColorAtWithMutuallyReflectiveSurfaces(t *testing.T) {
@@ -459,7 +460,7 @@ func TestRefractedColorWithRefractedRay(t *testing.T) {
 	hc := prepareHitComputations(xs[2], r, xs...)
 	c := w.refractedColor(hc, 5)
 
-	assertAlmost(t, floatcolor.New(0, 0.99888, 0.04725), c)
+	test.AssertAlmost(t, floatcolor.New(0, 0.99888, 0.04725), c)
 }
 
 func TestSchlickApproximationUnderTotalInternalReflection(t *testing.T) {
@@ -483,7 +484,7 @@ func TestSchlickApproximationWithPerpendicularViewingAngle(t *testing.T) {
 
 	reflectance := schlick(hc)
 
-	assertAlmost(t, 0.04, reflectance)
+	test.AssertAlmost(t, 0.04, reflectance)
 }
 
 func TestSchlickApproximationWithSmallAngle(t *testing.T) {
@@ -495,7 +496,7 @@ func TestSchlickApproximationWithSmallAngle(t *testing.T) {
 
 	reflectance := schlick(hc)
 
-	assertAlmost(t, 0.48873, reflectance)
+	test.AssertAlmost(t, 0.48873, reflectance)
 }
 
 func TestGenerateID(t *testing.T) {
@@ -520,21 +521,6 @@ func TestGenerateID(t *testing.T) {
 		t.Logf("checking %v and %v\n", last, next)
 		require.NotEqual(t, last, next)
 		last = next
-	}
-}
-
-func assertAlmost(t *testing.T, c1 any, c2 any) {
-	switch c1.(type) {
-	case floatcolor.Float64Color:
-		r1, g1, b1 := c1.(floatcolor.Float64Color).RGB()
-		r2, g2, b2 := c2.(floatcolor.Float64Color).RGB()
-		assert.True(t, float.AlmostEqual(r1, r2, 0.001), "R values differ: c1.R=%v, c2.R=%v", r1, r2)
-		assert.True(t, float.AlmostEqual(g1, g2, 0.001), "G values differ: c1.G=%v, c2.G=%v", g1, g2)
-		assert.True(t, float.AlmostEqual(b1, b2, 0.001), "B values differ: c1.B=%v, c2.B=%v", b1, b2)
-	case float64:
-		assert.True(t, float.AlmostEqual(c1.(float64), c2.(float64), 0.001), "values differ: c1=%v, c2=%v", c1, c2)
-	default:
-		panic("unhandled type")
 	}
 }
 
