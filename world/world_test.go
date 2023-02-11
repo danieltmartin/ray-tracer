@@ -258,6 +258,7 @@ func TestColorWhenRayMisses(t *testing.T) {
 	c := w.ColorAt(r, 1)
 
 	assert.Equal(t, floatcolor.Black, c)
+	assert.EqualValues(t, 1, w.stats.EyeRayCount())
 }
 
 func TestColorWhenRayHits(t *testing.T) {
@@ -267,6 +268,7 @@ func TestColorWhenRayHits(t *testing.T) {
 	c := w.ColorAt(r, 1)
 
 	assert.True(t, floatcolor.New(0.38066, 0.47583, 0.2855).Equals(c))
+	assert.EqualValues(t, 1, w.stats.EyeRayCount())
 }
 
 func TestColorWithIntersectionBehindRay(t *testing.T) {
@@ -280,6 +282,7 @@ func TestColorWithIntersectionBehindRay(t *testing.T) {
 	c := w.ColorAt(r, 1)
 
 	assert.True(t, floatcolor.White.Equals(c))
+	assert.EqualValues(t, 1, w.stats.EyeRayCount())
 }
 
 func TestNoShadowWhenNothingBetweenIntersectionAndLight(t *testing.T) {
@@ -320,6 +323,7 @@ func TestReflectedColorForNonReflectiveMaterial(t *testing.T) {
 	hc := prepareHitComputations(i, r)
 
 	assert.Equal(t, floatcolor.Black, w.reflectedColor(hc, 1))
+	assert.EqualValues(t, 0, w.stats.ReflectionRayCount())
 }
 
 func TestReflectedColorForReflectiveMaterial(t *testing.T) {
@@ -334,6 +338,7 @@ func TestReflectedColorForReflectiveMaterial(t *testing.T) {
 	hc := prepareHitComputations(i, r)
 
 	test.AssertAlmost(t, floatcolor.New(0.19032, 0.2379, 0.14274), w.reflectedColor(hc, 1))
+	assert.EqualValues(t, 1, w.stats.ReflectionRayCount())
 }
 
 func TestShadeHitForReflectiveMaterial(t *testing.T) {
@@ -349,6 +354,7 @@ func TestShadeHitForReflectiveMaterial(t *testing.T) {
 	color := w.shadeHit(hc, 1)
 
 	test.AssertAlmost(t, floatcolor.New(0.87677, 0.92436, 0.82918), color)
+	assert.EqualValues(t, 1, w.stats.ReflectionRayCount())
 }
 
 func TestReflectedColorAtMaximumRecursionDepth(t *testing.T) {
@@ -363,6 +369,7 @@ func TestReflectedColorAtMaximumRecursionDepth(t *testing.T) {
 	hc := prepareHitComputations(i, r)
 
 	test.AssertAlmost(t, floatcolor.Black, w.reflectedColor(hc, 0))
+	assert.EqualValues(t, 0, w.stats.ReflectionRayCount())
 }
 
 func TestColorAtWithMutuallyReflectiveSurfaces(t *testing.T) {
@@ -381,6 +388,8 @@ func TestColorAtWithMutuallyReflectiveSurfaces(t *testing.T) {
 
 	ray := ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 1, 0))
 	w.ColorAt(ray, 1)
+
+	assert.EqualValues(t, 1, w.stats.ReflectionRayCount())
 	// Should not overflow stack from infinite recursion
 }
 
@@ -397,6 +406,7 @@ func TestRefractedColorWithOpaqueSurface(t *testing.T) {
 	c := w.refractedColor(hc, 5)
 
 	assert.Equal(t, floatcolor.Black, c)
+	assert.EqualValues(t, 0, w.stats.RefractionRayCount())
 }
 
 func TestRefractedColorAtMaximumRecursionDepth(t *testing.T) {
@@ -416,6 +426,7 @@ func TestRefractedColorAtMaximumRecursionDepth(t *testing.T) {
 	c := w.refractedColor(hc, 0)
 
 	assert.Equal(t, floatcolor.Black, c)
+	assert.EqualValues(t, 0, w.stats.RefractionRayCount())
 }
 
 func TestRefractedColorUnderTotalInternalReflection(t *testing.T) {
@@ -435,6 +446,7 @@ func TestRefractedColorUnderTotalInternalReflection(t *testing.T) {
 	c := w.refractedColor(hc, 5)
 
 	assert.Equal(t, floatcolor.Black, c)
+	assert.EqualValues(t, 0, w.stats.RefractionRayCount())
 }
 
 func TestRefractedColorWithRefractedRay(t *testing.T) {
@@ -461,6 +473,7 @@ func TestRefractedColorWithRefractedRay(t *testing.T) {
 	c := w.refractedColor(hc, 5)
 
 	test.AssertAlmost(t, floatcolor.New(0, 0.99888, 0.04725), c)
+	assert.EqualValues(t, 1, w.stats.RefractionRayCount())
 }
 
 func TestSchlickApproximationUnderTotalInternalReflection(t *testing.T) {

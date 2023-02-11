@@ -29,10 +29,13 @@ type World struct {
 	idMutex    sync.Mutex
 	primitives []primitive.Primitive
 	lights     []*light.PointLight
+	stats      *Stats
 }
 
 func New() *World {
-	return &World{}
+	return &World{
+		stats: &Stats{},
+	}
 }
 
 func (w *World) AddPrimitives(p ...primitive.Primitive) {
@@ -51,6 +54,10 @@ func (w *World) Lights() []*light.PointLight {
 	return w.lights
 }
 
+func (w *World) Stats() *Stats {
+	return w.stats
+}
+
 func (w *World) intersect(r ray.Ray) primitive.Intersections {
 	allIntersections := *intersectionPool.Get().(*primitive.Intersections)
 	for _, p := range w.primitives {
@@ -65,6 +72,11 @@ func (w *World) intersect(r ray.Ray) primitive.Intersections {
 }
 
 func (w *World) ColorAt(ray ray.Ray, remaining int) floatcolor.Float64Color {
+	w.stats.eyeRayCount.inc()
+	return w.castRay(ray, remaining)
+}
+
+func (w *World) castRay(ray ray.Ray, remaining int) floatcolor.Float64Color {
 	xns := w.intersect(ray)
 	hit := xns.Hit()
 	if hit == nil {
@@ -96,6 +108,7 @@ func (w *World) shadeHit(hc hitComputations, remaining int) floatcolor.Float64Co
 }
 
 func (w *World) isShadowed(p tuple.Tuple, lightPosition tuple.Tuple) bool {
+	w.stats.shadowRayCount.inc()
 	pointToLight := lightPosition.Sub(p)
 	lightDistance := pointToLight.Mag()
 	xns := w.intersect(ray.New(p, pointToLight.Norm()))
@@ -109,8 +122,9 @@ func (w *World) reflectedColor(hc hitComputations, remaining int) floatcolor.Flo
 	if remaining == 0 || hc.object.Material().Reflective() == 0 {
 		return floatcolor.Black
 	}
+	w.stats.reflectionRayCount.inc()
 	reflectRay := ray.New(hc.overPoint, hc.reflectv)
-	return w.ColorAt(reflectRay, remaining-1).Mul(hc.object.Material().Reflective())
+	return w.castRay(reflectRay, remaining-1).Mul(hc.object.Material().Reflective())
 }
 
 func (w *World) refractedColor(hc hitComputations, remaining int) floatcolor.Float64Color {
@@ -129,11 +143,13 @@ func (w *World) refractedColor(hc hitComputations, remaining int) floatcolor.Flo
 		return floatcolor.Black
 	}
 
+	w.stats.refractionRayCount.inc()
+
 	cost := math.Sqrt(1.0 - sin2t)
 	direction := hc.normalv.Mul(nRatio*cosi - cost).Sub(hc.eyev.Mul(nRatio))
 	refractRay := ray.New(hc.underPoint, direction)
 
-	return w.ColorAt(refractRay, remaining-1).Mul(hc.object.Material().Transparency())
+	return w.castRay(refractRay, remaining-1).Mul(hc.object.Material().Transparency())
 }
 
 type hitComputations struct {

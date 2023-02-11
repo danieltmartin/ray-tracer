@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"time"
 
 	"github.com/danieltmartin/ray-tracer/camera"
 	"github.com/danieltmartin/ray-tracer/floatcolor"
@@ -154,7 +155,12 @@ func main() {
 		tuple.NewVector(0, 1, 0),
 	))
 
+	start := time.Now()
 	image := camera.Render(world)
+	duration := time.Since(start)
+	log.Printf("Render time: %v\n", duration)
+
+	world.Stats().Log()
 
 	f, err := os.Create("worldcamera.png")
 	if err != nil {
