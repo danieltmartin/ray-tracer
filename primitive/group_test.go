@@ -73,3 +73,99 @@ func TestIntersectTransformedGroup(t *testing.T) {
 
 	assert.Len(t, xs, 2)
 }
+
+func TestGroupBoundsSingleObject(t *testing.T) {
+	g := NewGroup()
+	g.SetTransform(transform.Scaling(2, 2, 2))
+	s := NewSphere()
+	s.SetTransform(transform.Translation(5, 0, 0))
+	g.Add(&s)
+
+	b := g.bounds()
+
+	assert.Equal(t, tuple.NewPoint(4, -1, -1), b.min)
+	assert.Equal(t, tuple.NewPoint(6, 1, 1), b.max)
+}
+
+func TestGroupBoundsTwoObjects(t *testing.T) {
+	g := NewGroup()
+	g.SetTransform(transform.Scaling(2, 2, 2))
+	s := NewSphere()
+	s.SetTransform(transform.Translation(5, 0, 0))
+	g.Add(&s)
+	c := NewCube()
+	c.SetTransform(transform.Translation(-3, -3, -3))
+	g.Add(&c)
+
+	b := g.bounds()
+
+	assert.Equal(t, tuple.NewPoint(-4, -4, -4), b.min)
+	assert.Equal(t, tuple.NewPoint(6, 1, 1), b.max)
+}
+
+func TestIntersectBoundsSingleObject(t *testing.T) {
+	g := NewGroup()
+	s := NewSphere()
+	g.Add(&s)
+
+	ray := ray.New(tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, 1))
+	intersects := g.intersectsBounds(ray)
+
+	assert.True(t, intersects)
+}
+
+func TestIntersectRayOriginatesInsideBounds(t *testing.T) {
+	g := NewGroup()
+	s := NewSphere()
+	g.Add(&s)
+
+	ray := ray.New(tuple.NewPoint(0, 0, 0), tuple.NewVector(0, 0, 1))
+	intersects := g.intersectsBounds(ray)
+
+	assert.True(t, intersects)
+}
+
+func TestNoIntersectBoundsSingleObject(t *testing.T) {
+	g := NewGroup()
+	s := NewSphere()
+	g.Add(&s)
+
+	examples := []struct {
+		origin, direction tuple.Tuple
+	}{
+		{tuple.NewPoint(0, 0, -5), tuple.NewVector(0, 0, -1)},
+		{tuple.NewPoint(0, 0, 5), tuple.NewVector(0, 0, 1)},
+		{tuple.NewPoint(-5, 0, 0), tuple.NewVector(-1, 0, 0)},
+		{tuple.NewPoint(5, 0, 0), tuple.NewVector(1, 0, 0)},
+		{tuple.NewPoint(0, 5, 0), tuple.NewVector(0, 1, 0)},
+		{tuple.NewPoint(0, -5, 0), tuple.NewVector(0, -1, 0)},
+	}
+
+	for _, e := range examples {
+		ray := ray.New(e.origin, e.direction)
+		intersects := g.intersectsBounds(ray)
+		assert.False(t, intersects)
+	}
+}
+
+func TestNoIntersectBoundsTwoObjects(t *testing.T) {
+	g := NewGroup()
+	s := NewSphere()
+	g.Add(&s)
+	s2 := NewSphere()
+	s2.SetTransform(transform.Translation(10, 10, 10))
+	g.Add(&s2)
+
+	examples := []struct {
+		origin, direction tuple.Tuple
+	}{
+		{tuple.NewPoint(0, 0, 20), tuple.NewVector(0, 0, 1)},
+		{tuple.NewPoint(0, 0, -20), tuple.NewVector(0, 0, -1)},
+	}
+
+	for _, e := range examples {
+		ray := ray.New(e.origin, e.direction)
+		intersects := g.intersectsBounds(ray)
+		assert.False(t, intersects, ray)
+	}
+}

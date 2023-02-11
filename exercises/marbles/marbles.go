@@ -45,14 +45,18 @@ func main() {
 			floatcolor.NewFromInt(0xded3d3), floatcolor.Black)).
 		WithSpecular(0).
 		WithAmbient(0.5).
-		WithReflective(0.2),
+		WithReflective(0.0),
 	)
 
-	light := light.NewPointLight(tuple.NewPoint(10, 10, -10), floatcolor.White)
+	light := light.NewPointLight(tuple.NewPoint(10, 30, -10), floatcolor.White)
 
 	world := world.New()
 	world.AddLights(&light)
 	world.AddPrimitives(&floor)
+
+	group := primitive.NewGroup()
+
+	rand.Seed(0)
 
 	length := 16.0
 	spacing := 3.0
@@ -76,14 +80,17 @@ func main() {
 				WithReflective(0.2).
 				WithSpecular(0.8))
 
-			world.AddPrimitives(&s)
+			group.Add(&s)
 		}
 	}
 
+	world.AddPrimitives(&group)
+
 	camera := camera.New(1920, 1080, math.Pi/7)
 	camera.SetTransform(transform.ViewTransform(
-		tuple.NewPoint(0, 10, 0),
-		tuple.NewPoint(length*spacing/2, 1, length*spacing/2),
+		tuple.NewPoint(0, 50, 0),
+		tuple.NewPoint(length*spacing, 1, length*spacing),
+		// tuple.NewPoint(length*spacing+900, 1, length*spacing+900), // not looking at anything
 		tuple.NewVector(0, 1, 0),
 	))
 

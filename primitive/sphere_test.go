@@ -123,3 +123,12 @@ func TestSphereNormalTransformed(t *testing.T) {
 
 	assert.True(t, tuple.NewVector(0, 0.97014, -0.24254).Equals(n))
 }
+
+func TestSphereBounds(t *testing.T) {
+	s := NewSphere()
+
+	b := s.bounds()
+
+	assert.Equal(t, tuple.NewPoint(-1, -1, -1), b.min)
+	assert.Equal(t, tuple.NewPoint(1, 1, 1), b.max)
+}

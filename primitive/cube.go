@@ -23,9 +23,9 @@ func (c *Cube) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
 }
 
 func (c *Cube) localIntersects(localRay ray.Ray) Intersections {
-	xtmin, xtmax := checkAxis(localRay.Origin().X, localRay.Direction().X)
-	ytmin, ytmax := checkAxis(localRay.Origin().Y, localRay.Direction().Y)
-	ztmin, ztmax := checkAxis(localRay.Origin().Z, localRay.Direction().Z)
+	xtmin, xtmax := c.checkAxis(localRay.Origin().X, localRay.Direction().X)
+	ytmin, ytmax := c.checkAxis(localRay.Origin().Y, localRay.Direction().Y)
+	ztmin, ztmax := c.checkAxis(localRay.Origin().Z, localRay.Direction().Z)
 
 	tmin := max(xtmin, ytmin, ztmin)
 	tmax := min(xtmax, ytmax, ztmax)
@@ -51,7 +51,7 @@ func (c *Cube) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
 	return tuple.NewVector(0, 0, localPoint.Z)
 }
 
-func checkAxis(origin, direction float64) (float64, float64) {
+func (c *Cube) checkAxis(origin, direction float64) (float64, float64) {
 	invDirection := 1 / direction
 	tmin := (-1 - origin) * invDirection
 	tmax := (1 - origin) * invDirection
@@ -80,4 +80,13 @@ func min(a, b, c float64) float64 {
 		return b
 	}
 	return c
+}
+
+var cubeBounds = newBounds(
+	tuple.NewPoint(-1, -1, -1),
+	tuple.NewPoint(1, 1, 1),
+)
+
+func (c *Cube) bounds() bounds {
+	return cubeBounds
 }
