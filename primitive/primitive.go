@@ -13,15 +13,19 @@ type Primitive interface {
 	InverseTransform() matrix.Matrix
 	SetMaterial(m material.Material)
 	SetTransform(t matrix.Matrix)
-
+	Parent() *Group
 	NormalAt(worldPoint tuple.Tuple) tuple.Tuple
 	Intersects(worldRay ray.Ray) Intersections
+	WorldPointToLocal(worldPoint tuple.Tuple) tuple.Tuple
+
+	setParent(g *Group)
 }
 
 type data struct {
 	material         material.Material
 	transform        matrix.Matrix
 	inverseTransform matrix.Matrix
+	parent           *Group
 }
 
 func newData() data {
@@ -30,6 +34,7 @@ func newData() data {
 		material.Default,
 		ident,
 		ident,
+		nil,
 	}
 }
 
@@ -54,13 +59,21 @@ func (d *data) SetMaterial(m material.Material) {
 	d.material = m
 }
 
-func (d *data) worldPointToLocal(world tuple.Tuple) tuple.Tuple {
+func (d *data) WorldPointToLocal(world tuple.Tuple) tuple.Tuple {
+	if d.parent != nil {
+		world = d.parent.WorldPointToLocal(world)
+	}
 	return d.inverseTransform.MulTuple(world)
 }
 
 func (d *data) localNormalToWorld(localNormal tuple.Tuple) tuple.Tuple {
-	worldNormal := d.inverseTransform.Transpose().MulTuple(localNormal)
-	return tuple.New(worldNormal.X, worldNormal.Y, worldNormal.Z, 0).Norm()
+	transformed := d.inverseTransform.Transpose().MulTuple(localNormal)
+	worldNormal := tuple.New(transformed.X, transformed.Y, transformed.Z, 0).Norm()
+
+	if d.parent != nil {
+		worldNormal = d.parent.localNormalToWorld(worldNormal)
+	}
+	return worldNormal
 }
 
 func (d *data) worldRayToLocal(r ray.Ray) ray.Ray {
@@ -76,12 +89,20 @@ func (d *data) worldIntersects(worldRay ray.Ray, localIntersecter localIntersect
 	return localIntersecter.localIntersects(localRay)
 }
 
+func (d *data) Parent() *Group {
+	return d.parent
+}
+
+func (d *data) setParent(g *Group) {
+	d.parent = g
+}
+
 type localNormalizer interface {
 	localNormalAt(localPoint tuple.Tuple) tuple.Tuple
 }
 
 func (d *data) worldNormalAt(worldPoint tuple.Tuple, localNormalizer localNormalizer) tuple.Tuple {
-	localPoint := d.worldPointToLocal(worldPoint)
+	localPoint := d.WorldPointToLocal(worldPoint)
 	localNormal := localNormalizer.localNormalAt(localPoint)
 	return d.localNormalToWorld(localNormal)
 }

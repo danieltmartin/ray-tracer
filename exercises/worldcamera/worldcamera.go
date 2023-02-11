@@ -139,8 +139,12 @@ func main() {
 
 	light := light.NewPointLight(tuple.NewPoint(-10, 10, -10), floatcolor.White)
 
+	group := primitive.NewGroup()
+	group.SetTransform(transform.Translation(0, 1, 0))
+	group.Add(&floor, &bigSphere, &smallSphere, &cube, &wall, &mirror, &cyl, &cone)
+
 	world := world.New()
-	world.AddPrimitives(&floor, &bigSphere, &smallSphere, &cube, &wall, &mirror, &cyl, &cone)
+	world.AddPrimitives(&group)
 	world.AddLights(&light)
 
 	camera := camera.New(1920, 1080, math.Pi/3)

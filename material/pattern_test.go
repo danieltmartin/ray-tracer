@@ -132,6 +132,6 @@ func assertColorsEqual(t *testing.T, expected, actual floatcolor.Float64Color) {
 
 type dummyObject matrix.Matrix
 
-func (d dummyObject) InverseTransform() matrix.Matrix {
-	return matrix.Matrix(d)
+func (d dummyObject) WorldPointToLocal(p tuple.Tuple) tuple.Tuple {
+	return matrix.Matrix(d).MulTuple(p)
 }

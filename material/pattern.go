@@ -146,10 +146,10 @@ func (TestPattern) inverseTransform() matrix.Matrix {
 }
 
 type Object interface {
-	InverseTransform() matrix.Matrix
+	WorldPointToLocal(p tuple.Tuple) tuple.Tuple
 }
 
 func toPatternPoint(pattern Pattern, object Object, worldPoint tuple.Tuple) tuple.Tuple {
-	objectPoint := object.InverseTransform().MulTuple(worldPoint)
+	objectPoint := object.WorldPointToLocal(worldPoint)
 	return pattern.inverseTransform().MulTuple(objectPoint)
 }
