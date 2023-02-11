@@ -14,6 +14,7 @@ type Cylinder struct {
 	data
 }
 
+// NewInfCylinder returns a cylinder extending to infinity in the negative and positive y direction.
 func NewInfCylinder() Cylinder {
 	return Cylinder{math.Inf(-1), math.Inf(1), false, newData()}
 }

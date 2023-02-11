@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"image/png"
 	"log"
 	"math"
 	"os"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/danieltmartin/ray-tracer/camera"
 	"github.com/danieltmartin/ray-tracer/floatcolor"
-	"github.com/danieltmartin/ray-tracer/image/ppm"
 	"github.com/danieltmartin/ray-tracer/light"
 	"github.com/danieltmartin/ray-tracer/material"
 	"github.com/danieltmartin/ray-tracer/primitive"
@@ -40,29 +40,40 @@ func main() {
 	floor := primitive.NewPlane()
 	floor.SetMaterial(floor.Material().
 		WithPattern(material.NewCheckerPattern(
-			floatcolor.NewFromInt(0xded3d3), floatcolor.NewFromInt(0x87a9cc))).
+			floatcolor.NewFromInt(0xded3d3), floatcolor.Black)).
 		WithSpecular(0).
 		WithAmbient(0.5).
 		WithReflective(0.2),
 	)
 
-	leftWall := primitive.NewPlane()
-	leftWall.SetTransform(transform.Identity().
+	wall := primitive.NewPlane()
+	wall.SetTransform(transform.Identity().
 		RotationX(math.Pi/2).
 		RotationY(-math.Pi/4).
 		Translation(0, 0, 5).
 		Matrix())
+	wall.SetMaterial(material.Default.
+		WithColor(floatcolor.NewFromInt(0x5d6360)).
+		WithDiffuse(0.7).
+		WithSpecular(0.8))
 
-	rightWall := primitive.NewPlane()
-	rightWall.SetTransform(transform.Identity().
-		RotationX(math.Pi/2).
-		RotationY(math.Pi/4).
-		Translation(0, 0, 5).
+	mirror := primitive.NewCube()
+	mirror.SetTransform(transform.Identity().
+		Scaling(1, 1, 0.05).
+		RotationY(-math.Pi/4).
+		Translation(-2.4, 1.7, 2).
 		Matrix())
+	mirror.SetMaterial(material.Default.
+		WithDiffuse(0).
+		WithAmbient(0).
+		WithReflective(1).
+		WithRefractiveIndex(1.52).
+		WithShininess(500).
+		WithSpecular(0.8))
 
-	middleSphere := primitive.NewSphere()
-	middleSphere.SetTransform(transform.Identity().RotationX(math.Pi).Translation(-0.5, 1, 0.5).Matrix())
-	middleSphere.SetMaterial(material.Default.
+	bigSphere := primitive.NewSphere()
+	bigSphere.SetTransform(transform.Identity().RotationX(math.Pi).Translation(-0.5, 1, 0.5).Matrix())
+	bigSphere.SetMaterial(material.Default.
 		WithPattern(material.NewGradientPattern(
 			floatcolor.NewFromInt(0x9f45FF), floatcolor.NewFromInt(0x05020D)).
 			WithTransform(transform.RotationY(math.Pi / 8))).
@@ -70,25 +81,55 @@ func main() {
 		WithReflective(0.2).
 		WithSpecular(0.8))
 
-	rightSphere := primitive.NewSphere()
-	rightSphere.SetTransform(transform.Identity().
+	cube := primitive.NewCube()
+	cube.SetTransform(transform.Identity().
+		RotationY(math.Pi/5).
 		Scaling(0.5, 0.5, 0.5).
-		Translation(1.5, 0.5, -0.5).
+		Translation(1.5, 0.5, -1.0).
 		Matrix())
-	rightSphere.SetMaterial(material.Default.
+	cube.SetMaterial(material.Default.
 		WithPattern(material.NewGradientPattern(
-			floatcolor.NewFromInt(0xC0451A), floatcolor.NewFromInt(0xF0B7B7)).
+			floatcolor.NewFromInt(0x051937), floatcolor.NewFromInt(0xA8EB12))).
+		WithDiffuse(0.7).
+		WithReflective(0.4).
+		WithTransparency(0.2).
+		WithRefractiveIndex(2).
+		WithSpecular(0.8))
+
+	cyl := primitive.NewCylinder(0, 2, true)
+	cyl.SetTransform(transform.Identity().
+		RotationX(math.Pi/4).
+		Scaling(0.8, 0.8, 0.8).
+		Translation(1.5, 1, 2).
+		Matrix())
+	cyl.SetMaterial(material.Default.
+		WithPattern(material.NewGradientPattern(
+			floatcolor.NewFromInt(0x051937), floatcolor.NewFromInt(0xA8EB12))).
+		WithDiffuse(0.7).
+		WithTransparency(0.2).
+		WithRefractiveIndex(2.5).
+		WithSpecular(0.8))
+
+	cone := primitive.NewCone(0, 1, true)
+	cone.SetTransform(transform.Identity().
+		RotationZ(math.Pi).
+		Translation(0, 1, -0.5).
+		Scaling(0.3, 0.3, 0.3).
+		Matrix())
+	cone.SetMaterial(material.Default.
+		WithPattern(material.NewGradientPattern(
+			floatcolor.NewFromInt(0x051937), floatcolor.NewFromInt(0xA8EB12)).
 			WithTransform(transform.RotationY(math.Pi / 8))).
 		WithDiffuse(0.7).
 		WithReflective(0.2).
 		WithSpecular(0.8))
 
-	leftSphere := primitive.NewSphere()
-	leftSphere.SetTransform(transform.Identity().
+	smallSphere := primitive.NewSphere()
+	smallSphere.SetTransform(transform.Identity().
 		Scaling(0.33, 0.33, 0.33).
 		Translation(-1.5, 0.33, -0.75).
 		Matrix())
-	leftSphere.SetMaterial(material.Default.
+	smallSphere.SetMaterial(material.Default.
 		WithPattern(material.NewGradientPattern(
 			floatcolor.NewFromInt(0x051937), floatcolor.NewFromInt(0xA8EB12)).
 			WithTransform(transform.RotationY(math.Pi / 8))).
@@ -99,7 +140,7 @@ func main() {
 	light := light.NewPointLight(tuple.NewPoint(-10, 10, -10), floatcolor.White)
 
 	world := world.New()
-	world.AddPrimitives(&floor, &middleSphere, &leftSphere, &rightSphere)
+	world.AddPrimitives(&floor, &bigSphere, &smallSphere, &cube, &wall, &mirror, &cyl, &cone)
 	world.AddLights(&light)
 
 	camera := camera.New(1920, 1080, math.Pi/3)
@@ -111,12 +152,12 @@ func main() {
 
 	image := camera.Render(world)
 
-	f, err := os.Create("worldcamera.ppm")
+	f, err := os.Create("worldcamera.png")
 	if err != nil {
 		panic(err)
 	}
 	w := bufio.NewWriter(f)
-	ppm.Encode(w, image)
+	png.Encode(w, image)
 	err = w.Flush()
 	if err != nil {
 		panic(err)
