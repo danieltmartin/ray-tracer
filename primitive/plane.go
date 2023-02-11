@@ -35,3 +35,12 @@ func (p *Plane) localIntersects(localRay ray.Ray) Intersections {
 func (p *Plane) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
 	return tuple.NewVector(0, 1, 0)
 }
+
+var planeBounds = newBounds(
+	tuple.NewPoint(math.Inf(-1), math.Inf(-1), math.Inf(-1)),
+	tuple.NewPoint(math.Inf(1), math.Inf(1), math.Inf(1)),
+)
+
+func (p *Plane) bounds() bounds {
+	return planeBounds
+}

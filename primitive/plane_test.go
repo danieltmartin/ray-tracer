@@ -1,6 +1,7 @@
 package primitive
 
 import (
+	"math"
 	"testing"
 
 	"github.com/danieltmartin/ray-tracer/ray"
@@ -59,4 +60,13 @@ func TestRayIntersectingPlaneFromBelow(t *testing.T) {
 	assert.Len(t, xs, 1)
 	assert.Equal(t, 1.0, xs[0].distance)
 	assert.Equal(t, &p, xs[0].object)
+}
+
+func TestPlaneBounds(t *testing.T) {
+	p := NewPlane()
+
+	b := p.bounds()
+
+	assert.Equal(t, tuple.NewPoint(math.Inf(-1), math.Inf(-1), math.Inf(-1)), b.min)
+	assert.Equal(t, tuple.NewPoint(math.Inf(1), math.Inf(1), math.Inf(1)), b.max)
 }

@@ -73,3 +73,16 @@ func TestIntersectTransformedGroup(t *testing.T) {
 
 	assert.Len(t, xs, 2)
 }
+
+func TestGroupBounds(t *testing.T) {
+	g := NewGroup()
+	g.SetTransform(transform.Scaling(2, 2, 2))
+	s := NewSphere()
+	s.SetTransform(transform.Translation(5, 0, 0))
+	g.Add(&s)
+
+	b := g.bounds()
+
+	assert.Equal(t, tuple.NewPoint(-2, -2, -2), b.min)
+	assert.Equal(t, tuple.NewPoint(6, 6, 6), b.min)
+}

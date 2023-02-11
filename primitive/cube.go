@@ -81,3 +81,12 @@ func min(a, b, c float64) float64 {
 	}
 	return c
 }
+
+var cubeBounds = newBounds(
+	tuple.NewPoint(-1, -1, -1),
+	tuple.NewPoint(1, 1, 1),
+)
+
+func (c *Cube) bounds() bounds {
+	return cubeBounds
+}

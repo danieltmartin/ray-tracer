@@ -18,6 +18,7 @@ type Primitive interface {
 	Intersects(worldRay ray.Ray) Intersections
 	WorldPointToLocal(worldPoint tuple.Tuple) tuple.Tuple
 
+	bounds() bounds
 	setParent(g *Group)
 }
 

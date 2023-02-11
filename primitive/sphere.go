@@ -47,3 +47,12 @@ func (s *Sphere) localIntersects(localRay ray.Ray) Intersections {
 func (s *Sphere) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
 	return localPoint.Sub(tuple.NewPoint(0, 0, 0))
 }
+
+var sphereBounds = newBounds(
+	tuple.NewPoint(-1, -1, -1),
+	tuple.NewPoint(1, 1, 1),
+)
+
+func (s *Sphere) bounds() bounds {
+	return sphereBounds
+}
