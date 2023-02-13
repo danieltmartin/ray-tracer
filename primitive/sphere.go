@@ -53,6 +53,6 @@ var sphereBounds = newBounds(
 	tuple.NewPoint(1, 1, 1),
 )
 
-func (s *Sphere) bounds() bounds {
+func (s *Sphere) Bounds() Bounds {
 	return sphereBounds
 }

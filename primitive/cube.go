@@ -87,6 +87,6 @@ var cubeBounds = newBounds(
 	tuple.NewPoint(1, 1, 1),
 )
 
-func (c *Cube) bounds() bounds {
+func (c *Cube) Bounds() Bounds {
 	return cubeBounds
 }

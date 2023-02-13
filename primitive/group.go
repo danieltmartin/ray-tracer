@@ -11,11 +11,11 @@ import (
 type Group struct {
 	children []Primitive
 	data
-	b bounds
+	b Bounds
 }
 
 func NewGroup() Group {
-	return Group{nil, newData(), bounds{}}
+	return Group{nil, newData(), Bounds{}}
 }
 
 func (g *Group) Add(p ...Primitive) {
@@ -23,18 +23,22 @@ func (g *Group) Add(p ...Primitive) {
 		if p == g {
 			panic("can't add group to itself")
 		}
-		if math.IsInf(p.bounds().min.X, 0) ||
-			math.IsInf(p.bounds().min.Y, 0) ||
-			math.IsInf(p.bounds().min.Z, 0) ||
-			math.IsInf(p.bounds().max.X, 0) ||
-			math.IsInf(p.bounds().max.Y, 0) ||
-			math.IsInf(p.bounds().max.Z, 0) {
+		if math.IsInf(p.Bounds().min.X, 0) ||
+			math.IsInf(p.Bounds().min.Y, 0) ||
+			math.IsInf(p.Bounds().min.Z, 0) ||
+			math.IsInf(p.Bounds().max.X, 0) ||
+			math.IsInf(p.Bounds().max.Y, 0) ||
+			math.IsInf(p.Bounds().max.Z, 0) {
 			panic("primitives with infinite bounds should not be added to a group")
 		}
 		p.setParent(g)
 	}
 	g.children = append(g.children, p...)
 	g.b = g.calcBounds()
+}
+
+func (g *Group) Children() []Primitive {
+	return g.children
 }
 
 func (g *Group) Intersects(worldRay ray.Ray) Intersections {
@@ -61,7 +65,7 @@ func (g *Group) localIntersects(localRay ray.Ray) Intersections {
 }
 
 func (g *Group) intersectsBounds(localRay ray.Ray) bool {
-	bounds := g.bounds()
+	bounds := g.Bounds()
 	origX, origY, origZ, _ := localRay.Origin().XYZW()
 	invDirX, invDirY, invDirZ, _ := localRay.InvDirection().XYZW()
 
@@ -81,15 +85,18 @@ func (g *Group) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
 	panic("can't compute local normal on a group")
 }
 
-func (g *Group) bounds() bounds {
+func (g *Group) Bounds() Bounds {
 	return g.b
 }
 
-func (g *Group) calcBounds() bounds {
+func (g *Group) calcBounds() Bounds {
+	if len(g.children) == 0 {
+		return g.b
+	}
 	var minX, minY, minZ = math.Inf(1), math.Inf(1), math.Inf(1)
 	var maxX, maxY, maxZ = math.Inf(-1), math.Inf(-1), math.Inf(-1)
 	for _, c := range g.children {
-		b := c.bounds()
+		b := c.Bounds()
 		bMin := c.Transform().MulTuple(b.min)
 		bMax := c.Transform().MulTuple(b.max)
 		for _, p := range []tuple.Tuple{bMin, bMax} {
@@ -105,5 +112,5 @@ func (g *Group) calcBounds() bounds {
 	min := tuple.NewPoint(minX, minY, minZ)
 	max := tuple.NewPoint(maxX, maxY, maxZ)
 
-	return bounds{min, max}
+	return Bounds{min, max}
 }

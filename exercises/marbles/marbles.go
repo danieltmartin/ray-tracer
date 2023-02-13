@@ -25,6 +25,8 @@ import (
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
+const useBVH = true
+
 func main() {
 	flag.Parse()
 	if *cpuprofile != "" {
@@ -54,10 +56,9 @@ func main() {
 	world.AddLights(&light)
 	world.AddPrimitives(&floor)
 
-	group := primitive.NewGroup()
-
 	rand.Seed(0)
 
+	var primitives []primitive.Primitive
 	length := 16.0
 	spacing := 3.0
 	for x := float64(0); x < length; x++ {
@@ -80,16 +81,25 @@ func main() {
 				WithReflective(0.2).
 				WithSpecular(0.8))
 
-			group.Add(&s)
+			primitives = append(primitives, &s)
 		}
 	}
 
-	world.AddPrimitives(&group)
+	rootGroup := primitive.NewGroup()
+	if useBVH {
+		buildBVH(&rootGroup, primitives)
+	} else {
+		for _, p := range primitives {
+			rootGroup.Add(p)
+		}
+	}
 
-	camera := camera.New(1920, 1080, math.Pi/7)
+	world.AddPrimitives(&rootGroup)
+
+	camera := camera.New(1920, 1080, math.Pi/5)
 	camera.SetTransform(transform.ViewTransform(
 		tuple.NewPoint(0, 50, 0),
-		tuple.NewPoint(length*spacing, 1, length*spacing),
+		tuple.NewPoint(length*spacing/2, 1, length*spacing/2),
 		// tuple.NewPoint(length*spacing+900, 1, length*spacing+900), // not looking at anything
 		tuple.NewVector(0, 1, 0),
 	))
@@ -123,4 +133,66 @@ func main() {
 			log.Fatal("could not write memory profile: ", err)
 		}
 	}
+}
+
+func buildBVH(group *primitive.Group, primitives []primitive.Primitive) {
+	if len(primitives) <= 4 {
+		group.Add(primitives...)
+		return
+	}
+	minX, maxX := xBounds(primitives)
+	minZ, maxZ := zBounds(primitives)
+	halfX := (maxX + minX) / 2
+	halfZ := (maxZ + minZ) / 2
+
+	var partitions [4][]primitive.Primitive
+	for _, s := range primitives {
+		minBounds := s.Transform().MulTuple(s.Bounds().Min())
+
+		switch {
+		case minBounds.X < halfX && minBounds.Z < halfZ:
+			partitions[0] = append(partitions[0], s)
+		case minBounds.X < halfX && minBounds.Z >= halfZ:
+			partitions[1] = append(partitions[1], s)
+		case minBounds.X >= halfX && minBounds.Z < halfZ:
+			partitions[2] = append(partitions[2], s)
+		case minBounds.X >= halfX && minBounds.Z >= halfZ:
+			partitions[3] = append(partitions[3], s)
+		}
+	}
+
+	group1 := primitive.NewGroup()
+	group2 := primitive.NewGroup()
+	group3 := primitive.NewGroup()
+	group4 := primitive.NewGroup()
+	buildBVH(&group1, partitions[0])
+	buildBVH(&group2, partitions[1])
+	buildBVH(&group3, partitions[2])
+	buildBVH(&group4, partitions[3])
+
+	group.Add(&group1, &group2, &group3, &group4)
+}
+
+func xBounds(spheres []primitive.Primitive) (float64, float64) {
+	minX := math.Inf(1)
+	maxX := math.Inf(-1)
+	for _, s := range spheres {
+		minBounds := s.Transform().MulTuple(s.Bounds().Min())
+		maxBounds := s.Transform().MulTuple(s.Bounds().Max())
+		minX = math.Min(math.Min(minX, minBounds.X), maxBounds.X)
+		maxX = math.Max(math.Max(maxX, minBounds.X), maxBounds.X)
+	}
+	return minX, maxX
+}
+
+func zBounds(spheres []primitive.Primitive) (float64, float64) {
+	minZ := math.Inf(1)
+	maxZ := math.Inf(-1)
+	for _, s := range spheres {
+		minBounds := s.Transform().MulTuple(s.Bounds().Min())
+		mazBounds := s.Transform().MulTuple(s.Bounds().Max())
+		minZ = math.Min(math.Min(minZ, minBounds.Z), mazBounds.Z)
+		maxZ = math.Max(math.Max(maxZ, minBounds.Z), mazBounds.Z)
+	}
+	return minZ, maxZ
 }

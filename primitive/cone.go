@@ -112,7 +112,7 @@ func (co *Cone) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
 	return tuple.NewVector(localPoint.X, y, localPoint.Z)
 }
 
-func (c *Cone) bounds() bounds {
+func (c *Cone) Bounds() Bounds {
 	return newBounds(
 		tuple.NewPoint(-1, c.minY, -1),
 		tuple.NewPoint(1, c.maxY, 1))

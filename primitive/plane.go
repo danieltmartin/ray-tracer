@@ -41,6 +41,6 @@ var planeBounds = newBounds(
 	tuple.NewPoint(math.Inf(1), math.Inf(1), math.Inf(1)),
 )
 
-func (p *Plane) bounds() bounds {
+func (p *Plane) Bounds() Bounds {
 	return planeBounds
 }

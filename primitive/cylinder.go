@@ -105,7 +105,7 @@ func (cyl *Cylinder) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
 	return tuple.NewVector(localPoint.X, 0, localPoint.Z)
 }
 
-func (cyl *Cylinder) bounds() bounds {
+func (cyl *Cylinder) Bounds() Bounds {
 	return newBounds(
 		tuple.NewPoint(-1, cyl.minY, -1),
 		tuple.NewPoint(1, cyl.maxY, 1))

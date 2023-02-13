@@ -2,10 +2,18 @@ package primitive
 
 import "github.com/danieltmartin/ray-tracer/tuple"
 
-type bounds struct {
+type Bounds struct {
 	min, max tuple.Tuple
 }
 
-func newBounds(min, max tuple.Tuple) bounds {
-	return bounds{min, max}
+func (b Bounds) Min() tuple.Tuple {
+	return b.min
+}
+
+func (b Bounds) Max() tuple.Tuple {
+	return b.max
+}
+
+func newBounds(min, max tuple.Tuple) Bounds {
+	return Bounds{min, max}
 }
