@@ -85,7 +85,7 @@ func TestNormalVectorOfCone(t *testing.T) {
 func TestInfiniteConeBounds(t *testing.T) {
 	c := NewInfCone()
 
-	b := c.bounds()
+	b := c.Bounds()
 
 	assert.Equal(t, tuple.NewPoint(-1, math.Inf(-1), -1), b.min)
 	assert.Equal(t, tuple.NewPoint(1, math.Inf(1), 1), b.max)
@@ -94,7 +94,7 @@ func TestInfiniteConeBounds(t *testing.T) {
 func TestConstrainedConeBounds(t *testing.T) {
 	c := NewCone(-5, 15, true)
 
-	b := c.bounds()
+	b := c.Bounds()
 
 	assert.Equal(t, tuple.NewPoint(-1, -5, -1), b.min)
 	assert.Equal(t, tuple.NewPoint(1, 15, 1), b.max)

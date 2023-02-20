@@ -83,7 +83,7 @@ func TestNormalOfCube(t *testing.T) {
 func TestCubeBounds(t *testing.T) {
 	c := NewCube()
 
-	b := c.bounds()
+	b := c.Bounds()
 
 	assert.Equal(t, tuple.NewPoint(-1, -1, -1), b.min)
 	assert.Equal(t, tuple.NewPoint(1, 1, 1), b.max)

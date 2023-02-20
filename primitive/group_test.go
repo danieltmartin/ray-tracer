@@ -81,7 +81,7 @@ func TestGroupBoundsSingleObject(t *testing.T) {
 	s.SetTransform(transform.Translation(5, 0, 0))
 	g.Add(&s)
 
-	b := g.bounds()
+	b := g.Bounds()
 
 	assert.Equal(t, tuple.NewPoint(4, -1, -1), b.min)
 	assert.Equal(t, tuple.NewPoint(6, 1, 1), b.max)
@@ -97,7 +97,7 @@ func TestGroupBoundsTwoObjects(t *testing.T) {
 	c.SetTransform(transform.Translation(-3, -3, -3))
 	g.Add(&c)
 
-	b := g.bounds()
+	b := g.Bounds()
 
 	assert.Equal(t, tuple.NewPoint(-4, -4, -4), b.min)
 	assert.Equal(t, tuple.NewPoint(6, 1, 1), b.max)

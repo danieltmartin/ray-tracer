@@ -140,7 +140,7 @@ func TestNormalVectorOnCylinderEndCaps(t *testing.T) {
 func TestInfiniteCylinderBounds(t *testing.T) {
 	c := NewInfCylinder()
 
-	b := c.bounds()
+	b := c.Bounds()
 
 	assert.Equal(t, tuple.NewPoint(-1, math.Inf(-1), -1), b.min)
 	assert.Equal(t, tuple.NewPoint(1, math.Inf(1), 1), b.max)
@@ -149,7 +149,7 @@ func TestInfiniteCylinderBounds(t *testing.T) {
 func TestConstrainedCylinderBounds(t *testing.T) {
 	c := NewCylinder(-5, 15, true)
 
-	b := c.bounds()
+	b := c.Bounds()
 
 	assert.Equal(t, tuple.NewPoint(-1, -5, -1), b.min)
 	assert.Equal(t, tuple.NewPoint(1, 15, 1), b.max)

@@ -97,9 +97,18 @@ func (g *Group) calcBounds() Bounds {
 	var maxX, maxY, maxZ = math.Inf(-1), math.Inf(-1), math.Inf(-1)
 	for _, c := range g.children {
 		b := c.Bounds()
-		bMin := c.Transform().MulTuple(b.min)
-		bMax := c.Transform().MulTuple(b.max)
-		for _, p := range []tuple.Tuple{bMin, bMax} {
+		t := c.Transform()
+		corners := []tuple.Tuple{
+			t.MulTuple(b.min),
+			t.MulTuple(b.max),
+			t.MulTuple(tuple.NewPoint(b.min.X, b.min.Y, b.max.Z)),
+			t.MulTuple(tuple.NewPoint(b.min.X, b.max.Y, b.min.Z)),
+			t.MulTuple(tuple.NewPoint(b.min.X, b.max.Y, b.max.Z)),
+			t.MulTuple(tuple.NewPoint(b.max.X, b.min.Y, b.min.Z)),
+			t.MulTuple(tuple.NewPoint(b.max.X, b.min.Y, b.max.Z)),
+			t.MulTuple(tuple.NewPoint(b.max.X, b.max.Y, b.min.Z)),
+		}
+		for _, p := range corners {
 			minX = math.Min(p.X, minX)
 			minY = math.Min(p.Y, minY)
 			minZ = math.Min(p.Z, minZ)
