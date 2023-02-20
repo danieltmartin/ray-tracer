@@ -112,8 +112,12 @@ func (co *Cone) localNormalAt(localPoint tuple.Tuple, _ Intersection) tuple.Tupl
 	return tuple.NewVector(localPoint.X, y, localPoint.Z)
 }
 
-func (c *Cone) Bounds() Bounds {
-	return newBounds(
-		tuple.NewPoint(-1, c.minY, -1),
-		tuple.NewPoint(1, c.maxY, 1))
+func (c *Cone) Bounds() *BoundingBox {
+	a := math.Abs(c.minY)
+	b := math.Abs(c.maxY)
+	limit := math.Max(a, b)
+	box := NewBoundingBox(
+		tuple.NewPoint(-limit, c.minY, -limit),
+		tuple.NewPoint(limit, c.maxY, limit))
+	return box
 }

@@ -48,11 +48,11 @@ func (s *Sphere) localNormalAt(localPoint tuple.Tuple, _ Intersection) tuple.Tup
 	return localPoint.Sub(tuple.NewPoint(0, 0, 0))
 }
 
-var sphereBounds = newBounds(
+var sphereBounds = NewBoundingBox(
 	tuple.NewPoint(-1, -1, -1),
 	tuple.NewPoint(1, 1, 1),
 )
 
-func (s *Sphere) Bounds() Bounds {
+func (s *Sphere) Bounds() *BoundingBox {
 	return sphereBounds
 }

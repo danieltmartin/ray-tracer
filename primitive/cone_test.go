@@ -87,8 +87,8 @@ func TestInfiniteConeBounds(t *testing.T) {
 
 	b := c.Bounds()
 
-	assert.Equal(t, tuple.NewPoint(-1, math.Inf(-1), -1), b.min)
-	assert.Equal(t, tuple.NewPoint(1, math.Inf(1), 1), b.max)
+	assert.Equal(t, tuple.NewPoint(math.Inf(-1), math.Inf(-1), math.Inf(-1)), b.min)
+	assert.Equal(t, tuple.NewPoint(math.Inf(1), math.Inf(1), math.Inf(1)), b.max)
 }
 
 func TestConstrainedConeBounds(t *testing.T) {
@@ -96,6 +96,6 @@ func TestConstrainedConeBounds(t *testing.T) {
 
 	b := c.Bounds()
 
-	assert.Equal(t, tuple.NewPoint(-1, -5, -1), b.min)
-	assert.Equal(t, tuple.NewPoint(1, 15, 1), b.max)
+	assert.Equal(t, tuple.NewPoint(-15, -5, -15), b.min)
+	assert.Equal(t, tuple.NewPoint(15, 15, 15), b.max)
 }

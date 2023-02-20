@@ -36,11 +36,11 @@ func (p *Plane) localNormalAt(localPoint tuple.Tuple, _ Intersection) tuple.Tupl
 	return tuple.NewVector(0, 1, 0)
 }
 
-var planeBounds = newBounds(
-	tuple.NewPoint(math.Inf(-1), math.Inf(-1), math.Inf(-1)),
-	tuple.NewPoint(math.Inf(1), math.Inf(1), math.Inf(1)),
+var planeBounds = NewBoundingBox(
+	tuple.NewPoint(math.Inf(-1), 0, math.Inf(-1)),
+	tuple.NewPoint(math.Inf(1), 0, math.Inf(1)),
 )
 
-func (p *Plane) Bounds() Bounds {
+func (p *Plane) Bounds() *BoundingBox {
 	return planeBounds
 }

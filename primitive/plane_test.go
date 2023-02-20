@@ -67,6 +67,6 @@ func TestPlaneBounds(t *testing.T) {
 
 	b := p.Bounds()
 
-	assert.Equal(t, tuple.NewPoint(math.Inf(-1), math.Inf(-1), math.Inf(-1)), b.min)
-	assert.Equal(t, tuple.NewPoint(math.Inf(1), math.Inf(1), math.Inf(1)), b.max)
+	assert.Equal(t, tuple.NewPoint(math.Inf(-1), 0, math.Inf(-1)), b.min)
+	assert.Equal(t, tuple.NewPoint(math.Inf(1), 0, math.Inf(1)), b.max)
 }

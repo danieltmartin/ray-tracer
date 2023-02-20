@@ -105,8 +105,9 @@ func (cyl *Cylinder) localNormalAt(localPoint tuple.Tuple, _ Intersection) tuple
 	return tuple.NewVector(localPoint.X, 0, localPoint.Z)
 }
 
-func (cyl *Cylinder) Bounds() Bounds {
-	return newBounds(
+func (cyl *Cylinder) Bounds() *BoundingBox {
+	b := NewBoundingBox(
 		tuple.NewPoint(-1, cyl.minY, -1),
 		tuple.NewPoint(1, cyl.maxY, 1))
+	return b
 }

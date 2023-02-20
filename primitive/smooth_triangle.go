@@ -42,7 +42,7 @@ func (t *SmoothTriangle) localIntersects(localRay ray.Ray) Intersections {
 	return triangleIntersects(t, localRay, t.p1, t.p2, t.e1, t.e2)
 }
 
-func (t *SmoothTriangle) Bounds() Bounds {
+func (t *SmoothTriangle) Bounds() *BoundingBox {
 	x1, y1, z1, _ := t.p1.XYZW()
 	x2, y2, z2, _ := t.p2.XYZW()
 	x3, y3, z3, _ := t.p3.XYZW()
@@ -54,5 +54,5 @@ func (t *SmoothTriangle) Bounds() Bounds {
 	maxY := math.Max(y1, math.Max(y2, y3))
 	maxZ := math.Max(z1, math.Max(z2, z3))
 
-	return Bounds{tuple.NewPoint(minX, minY, minZ), tuple.NewPoint(maxX, maxY, maxZ)}
+	return &BoundingBox{tuple.NewPoint(minX, minY, minZ), tuple.NewPoint(maxX, maxY, maxZ)}
 }
