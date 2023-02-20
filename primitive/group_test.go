@@ -3,6 +3,8 @@ package primitive
 import (
 	"testing"
 
+	"github.com/danieltmartin/ray-tracer/floatcolor"
+	"github.com/danieltmartin/ray-tracer/material"
 	"github.com/danieltmartin/ray-tracer/matrix"
 	"github.com/danieltmartin/ray-tracer/ray"
 	"github.com/danieltmartin/ray-tracer/transform"
@@ -168,4 +170,15 @@ func TestNoIntersectBoundsTwoObjects(t *testing.T) {
 		intersects := g.intersectsBounds(ray)
 		assert.False(t, intersects, ray)
 	}
+}
+
+func TestMaterialOfChildIsMaterialOfGroup(t *testing.T) {
+	g := NewGroup()
+	s := NewSphere()
+	g.Add(&s)
+	pattern := material.NewCheckerPattern(floatcolor.Black, floatcolor.White)
+	g.SetMaterial(material.Default.
+		WithPattern(pattern))
+
+	assert.Equal(t, pattern, s.Material().Pattern())
 }

@@ -23,10 +23,11 @@ type Primitive interface {
 }
 
 type data struct {
-	material         material.Material
-	transform        matrix.Matrix
-	inverseTransform matrix.Matrix
-	parent           *Group
+	material          material.Material
+	transform         matrix.Matrix
+	inverseTransform  matrix.Matrix
+	parent            *Group
+	useParentMaterial bool
 }
 
 func newData() data {
@@ -36,10 +37,14 @@ func newData() data {
 		ident,
 		ident,
 		nil,
+		true,
 	}
 }
 
 func (d *data) Material() material.Material {
+	if d.parent != nil && d.useParentMaterial {
+		return d.parent.Material()
+	}
 	return d.material
 }
 
@@ -57,6 +62,7 @@ func (d *data) SetTransform(m matrix.Matrix) {
 }
 
 func (d *data) SetMaterial(m material.Material) {
+	d.useParentMaterial = false
 	d.material = m
 }
 

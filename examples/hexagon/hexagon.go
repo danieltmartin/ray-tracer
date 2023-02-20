@@ -38,23 +38,14 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	floor := primitive.NewPlane()
-	floor.SetMaterial(floor.Material().
-		WithPattern(material.NewCheckerPattern(
-			floatcolor.NewFromInt(0xded3d3), floatcolor.Black)).
-		WithSpecular(0).
-		WithAmbient(0.5).
-		WithReflective(0.2),
-	)
-
 	light := light.NewPointLight(tuple.NewPoint(-10, 10, -10), floatcolor.White)
 
 	hex := hexagon()
+	hex.SetMaterial(material.Default.WithColor(floatcolor.NewFromInt(0xafba3c)))
 	hex.SetTransform(transform.Identity().RotationX(-math.Pi/5).Translation(0, 1, 0).Matrix())
 
 	world := world.New()
 	world.AddPrimitives(hex)
-	// world.AddPrimitives(&floor, &bigSphere, &smallSphere, &cube, &wall, &mirror, &cyl, &cone)
 	world.AddLights(&light)
 
 	camera := camera.New(1920, 1080, math.Pi/3)
