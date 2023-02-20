@@ -59,7 +59,7 @@ func TestLocalNormalToWorldWithParent(t *testing.T) {
 	g1.SetTransform(transform.RotationY(math.Pi / 2))
 	g2 := NewGroup()
 	g2.SetTransform(transform.Scaling(1, 2, 3))
-	g1.Add(&g2)
+	g1.Add(g2)
 	s := NewSphere()
 	s.SetTransform(transform.Translation(5, 0, 0))
 	g2.Add(&s)
@@ -86,7 +86,7 @@ func TestWorldRayToLocalWithParent(t *testing.T) {
 	g1.SetTransform(transform.RotationY(math.Pi / 2))
 	g2 := NewGroup()
 	g2.SetTransform(transform.Scaling(2, 2, 2))
-	g1.Add(&g2)
+	g1.Add(g2)
 	s := NewSphere()
 	s.SetTransform(transform.Translation(5, 0, 0))
 	g2.Add(&s)
@@ -101,12 +101,12 @@ func TestWorldNormalOnChildObject(t *testing.T) {
 	g1.SetTransform(transform.RotationY(math.Pi / 2))
 	g2 := NewGroup()
 	g2.SetTransform(transform.Scaling(1, 2, 3))
-	g1.Add(&g2)
+	g1.Add(g2)
 	s := NewSphere()
 	s.SetTransform(transform.Translation(5, 0, 0))
 	g2.Add(&s)
 
-	p := s.worldNormalAt(tuple.NewPoint(1.7321, 1.1547, -5.5774), &s)
+	p := s.worldNormalAt(tuple.NewPoint(1.7321, 1.1547, -5.5774), Intersection{}, &s)
 
 	test.AssertAlmost(t, tuple.NewVector(0.2857, 0.4286, -0.8571), p)
 }

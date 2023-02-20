@@ -75,7 +75,7 @@ func TestNormalOfCube(t *testing.T) {
 	}
 
 	for _, e := range examples {
-		normal := c.localNormalAt(e.point)
+		normal := c.localNormalAt(e.point, Intersection{})
 		assert.Equal(t, e.normal, normal)
 	}
 }

@@ -109,7 +109,7 @@ func hexagonEdge() primitive.Primitive {
 func hexagonSide() primitive.Primitive {
 	side := primitive.NewGroup()
 	side.Add(hexagonCorner(), hexagonEdge())
-	return &side
+	return side
 }
 
 func hexagon() primitive.Primitive {
@@ -119,5 +119,5 @@ func hexagon() primitive.Primitive {
 		side.SetTransform(transform.RotationY(float64(n) * math.Pi / 3))
 		hex.Add(side)
 	}
-	return &hex
+	return hex
 }

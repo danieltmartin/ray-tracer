@@ -1,12 +1,16 @@
 package primitive
 
 type Intersection struct {
-	distance float64
-	object   Primitive
+	distance, u, v float64
+	object         Primitive
 }
 
 func NewIntersection(distance float64, object Primitive) Intersection {
-	return Intersection{distance, object}
+	return Intersection{distance, 0, 0, object}
+}
+
+func NewIntersectionWithUV(distance, u, v float64, object Primitive) Intersection {
+	return Intersection{distance, u, v, object}
 }
 
 func (i Intersection) Distance() float64 {

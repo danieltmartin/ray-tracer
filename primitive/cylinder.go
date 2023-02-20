@@ -27,8 +27,8 @@ func (cyl *Cylinder) Intersects(worldRay ray.Ray) Intersections {
 	return cyl.worldIntersects(worldRay, cyl)
 }
 
-func (cyl *Cylinder) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
-	return cyl.worldNormalAt(worldPoint, cyl)
+func (cyl *Cylinder) NormalAt(worldPoint tuple.Tuple, xn Intersection) tuple.Tuple {
+	return cyl.worldNormalAt(worldPoint, xn, cyl)
 }
 
 func (cyl *Cylinder) localIntersects(localRay ray.Ray) Intersections {
@@ -95,7 +95,7 @@ func (cyl *Cylinder) intersectCaps(localRay ray.Ray) Intersections {
 	return xs
 }
 
-func (cyl *Cylinder) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
+func (cyl *Cylinder) localNormalAt(localPoint tuple.Tuple, _ Intersection) tuple.Tuple {
 	dist := localPoint.X*localPoint.X + localPoint.Z*localPoint.Z
 	if dist < 1 && localPoint.Y >= cyl.maxY-float.Epsilon {
 		return tuple.NewVector(0, 1, 0)

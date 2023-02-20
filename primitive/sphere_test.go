@@ -67,7 +67,7 @@ func TestSphereBehindRay(t *testing.T) {
 func TestSphereNormalXAxis(t *testing.T) {
 	s := NewSphere()
 
-	n := s.NormalAt(tuple.NewPoint(1, 0, 0))
+	n := s.NormalAt(tuple.NewPoint(1, 0, 0), Intersection{})
 
 	assert.Equal(t, tuple.NewVector(1, 0, 0), n)
 }
@@ -75,7 +75,7 @@ func TestSphereNormalXAxis(t *testing.T) {
 func TestSphereNormalYAxis(t *testing.T) {
 	s := NewSphere()
 
-	n := s.NormalAt(tuple.NewPoint(0, 1, 0))
+	n := s.NormalAt(tuple.NewPoint(0, 1, 0), Intersection{})
 
 	assert.Equal(t, tuple.NewVector(0, 1, 0), n)
 }
@@ -83,7 +83,7 @@ func TestSphereNormalYAxis(t *testing.T) {
 func TestSphereNormalZAxis(t *testing.T) {
 	s := NewSphere()
 
-	n := s.NormalAt(tuple.NewPoint(0, 0, 1))
+	n := s.NormalAt(tuple.NewPoint(0, 0, 1), Intersection{})
 
 	assert.Equal(t, tuple.NewVector(0, 0, 1), n)
 }
@@ -92,7 +92,7 @@ func TestSphereNormalNonAxial(t *testing.T) {
 	s := NewSphere()
 
 	p := math.Sqrt(3) / 3
-	n := s.NormalAt(tuple.NewPoint(p, p, p))
+	n := s.NormalAt(tuple.NewPoint(p, p, p), Intersection{})
 
 	assert.True(t, tuple.NewVector(p, p, p).Equals(n))
 }
@@ -101,7 +101,7 @@ func TestSphereNormalIsNormalized(t *testing.T) {
 	s := NewSphere()
 
 	p := math.Sqrt(3) / 3
-	n := s.NormalAt(tuple.NewPoint(p, p, p))
+	n := s.NormalAt(tuple.NewPoint(p, p, p), Intersection{})
 
 	assert.Equal(t, n, n.Norm())
 }
@@ -110,7 +110,7 @@ func TestSphereNormalTranslated(t *testing.T) {
 	s := NewSphere()
 	s.SetTransform(transform.Translation(0, 1, 0))
 
-	n := s.NormalAt(tuple.NewPoint(0, 1.70711, -0.70711))
+	n := s.NormalAt(tuple.NewPoint(0, 1.70711, -0.70711), Intersection{})
 
 	assert.True(t, tuple.NewVector(0, 0.70711, -0.70711).Equals(n))
 }
@@ -119,7 +119,7 @@ func TestSphereNormalTransformed(t *testing.T) {
 	s := NewSphere()
 	s.SetTransform(transform.Identity().RotationZ(math.Pi/5).Scaling(1, 0.5, 1).Matrix())
 
-	n := s.NormalAt(tuple.NewPoint(0, math.Sqrt(2)/2, -math.Sqrt(2)/2))
+	n := s.NormalAt(tuple.NewPoint(0, math.Sqrt(2)/2, -math.Sqrt(2)/2), Intersection{})
 
 	assert.True(t, tuple.NewVector(0, 0.97014, -0.24254).Equals(n))
 }

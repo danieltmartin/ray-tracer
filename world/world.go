@@ -176,7 +176,7 @@ func prepareHitComputations(
 	hc.object = hit.Object()
 	hc.hitPoint = ray.Position(hit.Distance())
 	hc.eyev = ray.Direction().Neg()
-	hc.normalv = hc.object.NormalAt(hc.hitPoint)
+	hc.normalv = hc.object.NormalAt(hc.hitPoint, hit)
 	hc.reflectv = ray.Direction().Reflect(hc.normalv)
 
 	if hc.normalv.Dot(hc.eyev) < 0 {

@@ -87,14 +87,14 @@ func main() {
 
 	rootGroup := primitive.NewGroup()
 	if useBVH {
-		buildBVH(&rootGroup, primitives)
+		buildBVH(rootGroup, primitives)
 	} else {
 		for _, p := range primitives {
 			rootGroup.Add(p)
 		}
 	}
 
-	world.AddPrimitives(&rootGroup)
+	world.AddPrimitives(rootGroup)
 
 	camera := camera.New(1920, 1080, math.Pi/5)
 	camera.SetTransform(transform.ViewTransform(
@@ -165,12 +165,12 @@ func buildBVH(group *primitive.Group, primitives []primitive.Primitive) {
 	group2 := primitive.NewGroup()
 	group3 := primitive.NewGroup()
 	group4 := primitive.NewGroup()
-	buildBVH(&group1, partitions[0])
-	buildBVH(&group2, partitions[1])
-	buildBVH(&group3, partitions[2])
-	buildBVH(&group4, partitions[3])
+	buildBVH(group1, partitions[0])
+	buildBVH(group2, partitions[1])
+	buildBVH(group3, partitions[2])
+	buildBVH(group4, partitions[3])
 
-	group.Add(&group1, &group2, &group3, &group4)
+	group.Add(group1, group2, group3, group4)
 }
 
 func xBounds(spheres []primitive.Primitive) (float64, float64) {

@@ -14,7 +14,7 @@ type Primitive interface {
 	SetMaterial(m material.Material)
 	SetTransform(t matrix.Matrix)
 	Parent() *Group
-	NormalAt(worldPoint tuple.Tuple) tuple.Tuple
+	NormalAt(worldPoint tuple.Tuple, xn Intersection) tuple.Tuple
 	Intersects(worldRay ray.Ray) Intersections
 	WorldPointToLocal(worldPoint tuple.Tuple) tuple.Tuple
 
@@ -105,11 +105,11 @@ func (d *data) setParent(g *Group) {
 }
 
 type localNormalizer interface {
-	localNormalAt(localPoint tuple.Tuple) tuple.Tuple
+	localNormalAt(localPoint tuple.Tuple, xn Intersection) tuple.Tuple
 }
 
-func (d *data) worldNormalAt(worldPoint tuple.Tuple, localNormalizer localNormalizer) tuple.Tuple {
+func (d *data) worldNormalAt(worldPoint tuple.Tuple, xn Intersection, localNormalizer localNormalizer) tuple.Tuple {
 	localPoint := d.WorldPointToLocal(worldPoint)
-	localNormal := localNormalizer.localNormalAt(localPoint)
+	localNormal := localNormalizer.localNormalAt(localPoint, xn)
 	return d.localNormalToWorld(localNormal)
 }

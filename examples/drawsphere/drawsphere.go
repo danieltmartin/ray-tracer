@@ -41,7 +41,7 @@ func main() {
 			hit := s.Intersects(r).Hit()
 			if hit != nil {
 				point := r.Position(hit.Distance())
-				normal := hit.Object().NormalAt(point)
+				normal := hit.Object().NormalAt(point, *hit)
 				eye := r.Direction().Neg()
 				color := hit.Object().Material().Lighting(&s, light, point, eye, normal, false)
 				c.WritePixel(x, y, color)

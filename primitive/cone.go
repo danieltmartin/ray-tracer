@@ -27,8 +27,8 @@ func (co *Cone) Intersects(worldRay ray.Ray) Intersections {
 	return co.worldIntersects(worldRay, co)
 }
 
-func (co *Cone) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
-	return co.worldNormalAt(worldPoint, co)
+func (co *Cone) NormalAt(worldPoint tuple.Tuple, xn Intersection) tuple.Tuple {
+	return co.worldNormalAt(worldPoint, xn, co)
 }
 
 func (co *Cone) localIntersects(localRay ray.Ray) Intersections {
@@ -98,7 +98,7 @@ func (co *Cone) intersectCaps(localRay ray.Ray) Intersections {
 	return xs
 }
 
-func (co *Cone) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
+func (co *Cone) localNormalAt(localPoint tuple.Tuple, _ Intersection) tuple.Tuple {
 	dist := localPoint.X*localPoint.X + localPoint.Z*localPoint.Z
 	if dist < 1 && localPoint.Y >= co.maxY-float.Epsilon {
 		return tuple.NewVector(0, 1, 0)

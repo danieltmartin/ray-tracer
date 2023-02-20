@@ -21,8 +21,8 @@ func (s *Sphere) Intersects(worldRay ray.Ray) Intersections {
 	return s.worldIntersects(worldRay, s)
 }
 
-func (s *Sphere) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
-	return s.worldNormalAt(worldPoint, s)
+func (s *Sphere) NormalAt(worldPoint tuple.Tuple, xn Intersection) tuple.Tuple {
+	return s.worldNormalAt(worldPoint, xn, s)
 }
 
 func (s *Sphere) localIntersects(localRay ray.Ray) Intersections {
@@ -44,7 +44,7 @@ func (s *Sphere) localIntersects(localRay ray.Ray) Intersections {
 	)
 }
 
-func (s *Sphere) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
+func (s *Sphere) localNormalAt(localPoint tuple.Tuple, _ Intersection) tuple.Tuple {
 	return localPoint.Sub(tuple.NewPoint(0, 0, 0))
 }
 

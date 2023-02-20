@@ -18,8 +18,8 @@ func NewCube() Cube {
 func (c *Cube) Intersects(worldRay ray.Ray) Intersections {
 	return c.worldIntersects(worldRay, c)
 }
-func (c *Cube) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
-	return c.worldNormalAt(worldPoint, c)
+func (c *Cube) NormalAt(worldPoint tuple.Tuple, xn Intersection) tuple.Tuple {
+	return c.worldNormalAt(worldPoint, xn, c)
 }
 
 func (c *Cube) localIntersects(localRay ray.Ray) Intersections {
@@ -37,7 +37,7 @@ func (c *Cube) localIntersects(localRay ray.Ray) Intersections {
 	return NewIntersections(NewIntersection(tmin, c), NewIntersection(tmax, c))
 }
 
-func (c *Cube) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
+func (c *Cube) localNormalAt(localPoint tuple.Tuple, _ Intersection) tuple.Tuple {
 	absx := math.Abs(localPoint.X)
 	absy := math.Abs(localPoint.Y)
 	absz := math.Abs(localPoint.Z)

@@ -30,9 +30,9 @@ func TestNormalOfTriangle(t *testing.T) {
 
 	tr := NewTriangle(p1, p2, p3)
 
-	n1 := tr.localNormalAt(tuple.NewPoint(0, 0.5, 0))
-	n2 := tr.localNormalAt(tuple.NewPoint(-0.5, 0.75, 0))
-	n3 := tr.localNormalAt(tuple.NewPoint(0.5, 0.25, 0))
+	n1 := tr.localNormalAt(tuple.NewPoint(0, 0.5, 0), Intersection{})
+	n2 := tr.localNormalAt(tuple.NewPoint(-0.5, 0.75, 0), Intersection{})
+	n3 := tr.localNormalAt(tuple.NewPoint(0.5, 0.25, 0), Intersection{})
 
 	assert.Equal(t, tr.normal, n1)
 	assert.Equal(t, tr.normal, n2)

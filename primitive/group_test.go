@@ -34,7 +34,7 @@ func TestAddGroupToItself(t *testing.T) {
 		}
 	}()
 	g := NewGroup()
-	g.Add(&g)
+	g.Add(g)
 }
 
 func TestIntersectRayWithEmptyGroup(t *testing.T) {

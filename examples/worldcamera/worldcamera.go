@@ -15,6 +15,7 @@ import (
 	"github.com/danieltmartin/ray-tracer/floatcolor"
 	"github.com/danieltmartin/ray-tracer/light"
 	"github.com/danieltmartin/ray-tracer/material"
+	"github.com/danieltmartin/ray-tracer/obj"
 	"github.com/danieltmartin/ray-tracer/primitive"
 	"github.com/danieltmartin/ray-tracer/transform"
 	"github.com/danieltmartin/ray-tracer/tuple"
@@ -141,12 +142,30 @@ func main() {
 	light := light.NewPointLight(tuple.NewPoint(-10, 10, -10), floatcolor.White)
 
 	group := primitive.NewGroup()
-	// group.SetTransform(transform.Translation(0, 1, 0))
 	group.Add(&bigSphere, &smallSphere, &cube, &mirror, &cyl, &cone)
 
+	file, err := os.Open("./teapot-low.obj")
+	if err != nil {
+		panic(err)
+	}
+
+	start := time.Now()
+	teapot, err := obj.Parse(file)
+	duration := time.Since(start)
+	log.Printf("Obj parse time: %v\n", duration)
+	if err != nil {
+		panic(err)
+	}
+
+	teapot.SetTransform(transform.Identity().
+		RotationX(-math.Pi/2).
+		Translation(0, -1, 0).
+		Scaling(0.1, 0.1, 0.1).
+		Matrix())
+
 	world := world.New()
-	world.AddPrimitives(&group, &floor, &wall)
-	// world.AddPrimitives(&floor, &bigSphere, &smallSphere, &cube, &wall, &mirror, &cyl, &cone)
+	// world.AddPrimitives(group, &floor, &wall)
+	world.AddPrimitives(teapot)
 	world.AddLights(&light)
 
 	camera := camera.New(1920, 1080, math.Pi/3)
@@ -156,9 +175,9 @@ func main() {
 		tuple.NewVector(0, 1, 0),
 	))
 
-	start := time.Now()
+	start = time.Now()
 	image := camera.Render(world)
-	duration := time.Since(start)
+	duration = time.Since(start)
 	log.Printf("Render time: %v\n", duration)
 
 	world.Stats().Log()

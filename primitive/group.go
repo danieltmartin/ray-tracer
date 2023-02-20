@@ -3,6 +3,7 @@ package primitive
 import (
 	"math"
 	"sort"
+	"sync"
 
 	"github.com/danieltmartin/ray-tracer/ray"
 	"github.com/danieltmartin/ray-tracer/tuple"
@@ -11,14 +12,21 @@ import (
 type Group struct {
 	children []Primitive
 	data
-	b Bounds
+	b           Bounds
+	boundsDirty bool
+	mut         sync.Mutex
 }
 
-func NewGroup() Group {
-	return Group{nil, newData(), Bounds{}}
+func NewGroup() *Group {
+	var g Group
+	g.data = newData()
+	return &g
 }
 
 func (g *Group) Add(p ...Primitive) {
+	if len(p) == 0 {
+		return
+	}
 	for _, p := range p {
 		if p == g {
 			panic("can't add group to itself")
@@ -34,7 +42,7 @@ func (g *Group) Add(p ...Primitive) {
 		p.setParent(g)
 	}
 	g.children = append(g.children, p...)
-	g.b = g.calcBounds()
+	g.boundsDirty = true
 }
 
 func (g *Group) Children() []Primitive {
@@ -45,8 +53,8 @@ func (g *Group) Intersects(worldRay ray.Ray) Intersections {
 	return g.worldIntersects(worldRay, g)
 }
 
-func (g *Group) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
-	return g.worldNormalAt(worldPoint, g)
+func (g *Group) NormalAt(worldPoint tuple.Tuple, xn Intersection) tuple.Tuple {
+	return g.worldNormalAt(worldPoint, xn, g)
 }
 
 func (g *Group) localIntersects(localRay ray.Ray) Intersections {
@@ -81,11 +89,17 @@ func (g *Group) intersectsBounds(localRay ray.Ray) bool {
 	return tmax >= math.Max(tmin, 0)
 }
 
-func (g *Group) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
+func (g *Group) localNormalAt(localPoint tuple.Tuple, _ Intersection) tuple.Tuple {
 	panic("can't compute local normal on a group")
 }
 
 func (g *Group) Bounds() Bounds {
+	g.mut.Lock()
+	defer g.mut.Unlock()
+	if g.boundsDirty {
+		g.b = g.calcBounds()
+		g.boundsDirty = false
+	}
 	return g.b
 }
 

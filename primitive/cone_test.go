@@ -77,7 +77,7 @@ func TestNormalVectorOfCone(t *testing.T) {
 	}
 
 	for _, e := range examples {
-		n := c.localNormalAt(e.point)
+		n := c.localNormalAt(e.point, Intersection{})
 		assert.Equal(t, e.normal, n)
 	}
 }

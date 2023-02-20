@@ -16,8 +16,8 @@ func NewPlane() Plane {
 	return Plane{newData()}
 }
 
-func (p *Plane) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
-	return p.worldNormalAt(worldPoint, p)
+func (p *Plane) NormalAt(worldPoint tuple.Tuple, xn Intersection) tuple.Tuple {
+	return p.worldNormalAt(worldPoint, xn, p)
 }
 
 func (p *Plane) Intersects(worldRay ray.Ray) Intersections {
@@ -32,7 +32,7 @@ func (p *Plane) localIntersects(localRay ray.Ray) Intersections {
 	return NewIntersections(NewIntersection(distance, p))
 }
 
-func (p *Plane) localNormalAt(localPoint tuple.Tuple) tuple.Tuple {
+func (p *Plane) localNormalAt(localPoint tuple.Tuple, _ Intersection) tuple.Tuple {
 	return tuple.NewVector(0, 1, 0)
 }
 
